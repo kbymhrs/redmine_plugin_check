@@ -1,0 +1,144 @@
+.upgrade-advisor-intro {
+  color: #5f6b76;
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.upgrade-advisor-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.upgrade-advisor-summary div {
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 8px;
+}
+
+.upgrade-advisor-summary strong {
+  display: block;
+  color: #666;
+  font-size: 90%;
+}
+
+.upgrade-advisor-form {
+  margin: 12px 0;
+}
+
+.upgrade-advisor-form-option {
+  display: inline-block;
+  margin-left: 12px;
+}
+
+.upgrade-advisor-status {
+  display: inline-block;
+  min-width: 72px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.status-ok {
+  color: #246b2d;
+  background: #e4f5e7;
+}
+
+.status-warning {
+  color: #7a5400;
+  background: #fff0c2;
+}
+
+.status-unknown {
+  color: #555;
+  background: #eeeeee;
+}
+
+.status-risky {
+  color: #9b1c1c;
+  background: #ffe0e0;
+}
+
+.upgrade-advisor-notes {
+  margin: 0;
+  padding-left: 18px;
+  text-align: left;
+}
+
+.upgrade-advisor-findings {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.upgrade-advisor-plugins {
+  min-width: 1680px;
+}
+
+.upgrade-advisor-plugins .upgrade-advisor-notes-col {
+  width: 460px;
+}
+
+.upgrade-advisor-plugins th.upgrade-advisor-notes-column,
+.upgrade-advisor-plugins td.upgrade-advisor-notes-column {
+  min-width: 460px !important;
+  width: 460px !important;
+  text-align: left !important;
+  vertical-align: top;
+  white-space: normal;
+}
+
+.upgrade-advisor-column-help {
+  border-bottom: 1px dotted #777;
+  cursor: help;
+}
+
+.upgrade-advisor-help {
+  margin: 16px 0 0;
+  border: 1px solid #d9e1e8;
+  border-radius: 4px;
+  background: #fff;
+  padding: 12px;
+}
+
+.upgrade-advisor-help h3 {
+  margin: 0 0 10px;
+}
+
+.upgrade-advisor-help-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.upgrade-advisor-help-table th,
+.upgrade-advisor-help-table td {
+  border-bottom: 1px solid #e3e8ed;
+  padding: 7px 9px;
+  text-align: left !important;
+  vertical-align: top;
+}
+
+.upgrade-advisor-help-table thead th {
+  background: #eee;
+}
+
+.upgrade-advisor-help-table th:first-child {
+  width: 190px;
+}
+
+.upgrade-advisor-help-table tbody th {
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.upgrade-advisor-help-table tbody tr:nth-child(even) th,
+.upgrade-advisor-help-table tbody tr:nth-child(even) td {
+  background: #f7f9fb;
+}
+
+.upgrade-advisor-help-table tbody tr:hover th,
+.upgrade-advisor-help-table tbody tr:hover td {
+  background: #fff8d9;
+}

@@ -1,9 +1,24 @@
-require_relative 'app/services/redmine_upgrade_advisor/version_requirement'
-require_relative 'app/services/redmine_upgrade_advisor/compatibility_scanner'
-require_relative 'app/services/redmine_upgrade_advisor/latest_version_checker'
-require_relative 'app/services/redmine_upgrade_advisor/analyzer'
+plugin_path = File.dirname(__FILE__)
 
-Redmine::Plugin.register :redmine_upgrade_advisor do
+I18n.load_path += Dir[File.join(plugin_path, 'config', 'locales', '*.yml')]
+
+Rails.configuration.autoload_paths += [
+  File.join(plugin_path, 'app', 'controllers'),
+  File.join(plugin_path, 'app', 'models'),
+  File.join(plugin_path, 'app', 'helpers'),
+  File.join(plugin_path, 'app', 'services')
+]
+
+Rails.configuration.to_prepare do
+  require_dependency File.join(plugin_path, 'app/services/redmine_upgrade_advisor/version_requirement')
+  require_dependency File.join(plugin_path, 'app/services/redmine_upgrade_advisor/compatibility_scanner')
+  require_dependency File.join(plugin_path, 'app/services/redmine_upgrade_advisor/latest_version_checker')
+  require_dependency File.join(plugin_path, 'app/services/redmine_upgrade_advisor/analyzer')
+  require_dependency File.join(plugin_path, 'app/helpers/redmine_upgrade_advisor_helper')
+  require_dependency File.join(plugin_path, 'app/controllers/redmine_upgrade_advisor_controller')
+end
+
+Redmine::Plugin.register :redmine_plugin_check do
   name 'Plugin Compatibility Check'
   author 'kbymhrs'
   description 'Diagnoses installed Redmine plugins before a Redmine version upgrade.'
@@ -19,4 +34,3 @@ Redmine::Plugin.register :redmine_upgrade_advisor do
        :caption => :label_redmine_plugin_check,
        :html => { :class => 'icon icon-reload' }
 end
-

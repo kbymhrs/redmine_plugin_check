@@ -1,7 +1,10 @@
 class RedmineUpgradeAdvisorController < ApplicationController
-  layout 'admin'
+  prepend_view_path File.expand_path('../../views', __FILE__)
 
-  before_action :require_admin
+  layout 'admin'
+  helper RedmineUpgradeAdvisorHelper
+
+  before_filter :require_admin
 
   def index
     @target_version = params[:target_version].to_s.strip

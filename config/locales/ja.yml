@@ -23,7 +23,7 @@ ja:
   text_redmine_plugin_check_intro: "Redmine アップグレード前に、インストール済み plugin の互換性シグナルを読み取り専用で確認します。"
   redmine_plugin_check:
     column_help:
-      status: "入力した移行先バージョンと検出結果から、OK / Warning / Unknown / Risky の総合判定を表示します。"
+      status: "入力した移行先バージョンと検出結果から、OK / Warning / Unknown / Risky の総合判定を表示します。Risky の場合は主な理由も赤字で表示します。"
       identifier: "Redmine::Plugin.register で登録された plugin id です。"
       name: "plugin の表示名です。「-」は name が未設定または取得できないことを示します。"
       version: "plugin の version です。「-」は version が未設定または取得できないことを示します。"

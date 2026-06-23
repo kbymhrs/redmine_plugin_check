@@ -84,9 +84,19 @@
     <tbody>
       <% @report.plugins.each do |plugin| %>
         <tr>
-          <td><%= plugin_check_status_label(plugin.status) %></td>
-          <td><code><%= plugin.id %></code></td>
-          <td><%= plugin.name.presence || '-' %></td>
+          <td>
+            <%= plugin_check_status_label(plugin.status) %>
+            <% risky_reasons = plugin_check_risky_reason_labels(plugin) %>
+            <% if risky_reasons.any? %>
+              <ul class="plugin-check-risky-reasons">
+                <% risky_reasons.each do |reason| %>
+                  <li><%= reason %></li>
+                <% end %>
+              </ul>
+            <% end %>
+          </td>
+          <td class="plugin-check-id-column"><code><%= plugin.id %></code></td>
+          <td><%= plugin_check_name_label(plugin) %></td>
           <td><%= plugin.version.presence || '-' %></td>
           <td><%= plugin_check_latest_version_label(plugin, @check_latest) %></td>
           <td><%= plugin.author.presence || '-' %></td>
@@ -101,7 +111,7 @@
             <% if plugin.compatibility_findings.any? %>
               <ul class="plugin-check-findings">
                 <% plugin.compatibility_findings.each do |finding| %>
-                  <li><%= plugin_check_finding_label(finding) %></li>
+                  <li class="<%= plugin_check_finding_class(finding) %>"><%= plugin_check_finding_label(finding) %></li>
                 <% end %>
               </ul>
             <% else %>
@@ -112,7 +122,7 @@
             <% if plugin.notes.any? %>
               <ul class="plugin-check-notes">
                 <% plugin.notes.each do |note| %>
-                  <li><%= plugin_check_note_label(note) %></li>
+                  <li class="<%= plugin_check_note_class(note) %>"><%= plugin_check_note_label(note) %></li>
                 <% end %>
               </ul>
             <% else %>

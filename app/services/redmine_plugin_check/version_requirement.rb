@@ -5,28 +5,32 @@ module RedminePluginCheck
     end
 
     def satisfied_by?(version)
-      target = Gem::Version.new(clean_version(version))
-      constraints = parsed_constraints
+      target = clean_version(version)
+      groups = parsed_constraint_groups
 
-      return nil if constraints.empty?
+      return nil if groups.empty?
 
-      constraints.all? do |operator, required_version|
-        compare(target, operator, Gem::Version.new(clean_version(required_version)))
+      groups.any? do |constraints|
+        constraints.all? do |operator, required_version|
+          compare(target, operator, clean_version(required_version))
+        end
       end
     end
 
     def lower_bound_only?
-      constraints = parsed_constraints
-      return false if constraints.empty?
+      groups = parsed_constraint_groups
+      return false if groups.empty?
 
-      constraints.all? do |operator, _required_version|
-        operator == '>=' || operator == '>'
+      groups.all? do |constraints|
+        constraints.any? && constraints.all? do |operator, _required_version|
+          operator == :version_or_higher || operator == '>=' || operator == '>'
+        end
       end
     end
 
     def minimum_version
-      versions = parsed_constraints.map do |operator, required_version|
-        if operator == '>=' || operator == '>'
+      versions = parsed_constraint_groups.flatten(1).map do |operator, required_version|
+        if operator == :version_or_higher || operator == '>=' || operator == '>'
           Gem::Version.new(clean_version(required_version))
         end
       end.compact
@@ -38,16 +42,16 @@ module RedminePluginCheck
 
     attr_reader :requirement
 
-    def parsed_constraints
-      parse_constraints(requirement)
+    def parsed_constraint_groups
+      parse_constraint_groups(requirement)
     end
 
-    def parse_constraints(value)
+    def parse_constraint_groups(value)
       case value
       when Hash
         parse_hash(value)
       when Array
-        value.flat_map { |item| parse_constraints(item) }
+        value.flat_map { |item| parse_constraint_groups(item) }
       else
         parse_string(value.to_s)
       end
@@ -57,12 +61,23 @@ module RedminePluginCheck
       hash.flat_map do |key, value|
         case key.to_sym
         when :version_or_higher
-          [['>=', value]]
+          [[[:version_or_higher, value]]]
         when :version
-          [['==', value]]
+          parse_redmine_version_value(value)
         else
           []
         end
+      end
+    end
+
+    def parse_redmine_version_value(value)
+      case value
+      when Range
+        [[[:redmine_gte, value.first], [:redmine_lte, value.last]]]
+      when Array
+        value.map { |version| [[:redmine_eq, version]] }
+      else
+        [[[:redmine_eq, value]]]
       end
     end
 
@@ -70,44 +85,110 @@ module RedminePluginCheck
       text = value.strip
       return [] if text.empty?
 
-      if text.include?('version_or_higher')
-        version = text[/version_or_higher:\s*['"]([^'"]+)['"]/, 1] ||
-                  text[/:version_or_higher\s*=>\s*['"]([^'"]+)['"]/, 1]
-        return version ? [['>=', version]] : []
+      version_or_higher = extract_keyed_version(text, 'version_or_higher')
+      return [[[:version_or_higher, version_or_higher]]] if version_or_higher
+
+      range = extract_version_range(text)
+      return [[[:redmine_gte, range.first], [:redmine_lte, range.last]]] if range
+
+      array = extract_version_array(text)
+      return array.map { |version| [[:redmine_eq, version]] } if array.any?
+
+      keyed_version = extract_keyed_version(text, 'version')
+      return [[[:redmine_eq, keyed_version]]] if keyed_version
+
+      operator_constraints = parse_operator_constraints(text)
+      return [operator_constraints] if operator_constraints.any?
+
+      bare_version = extract_bare_version(text)
+      return [[[:version_or_higher, bare_version]]] if bare_version
+
+      []
+    end
+
+    def extract_keyed_version(text, key)
+      patterns = [
+        /#{key}:\s*['"]([^'"]+)['"]/,
+        /:#{key}\s*=>\s*['"]([^'"]+)['"]/
+      ]
+
+      patterns.each do |pattern|
+        match = text.match(pattern)
+        return match[1] if match
       end
 
-      if text.include?('version:')
-        version = text[/version:\s*['"]([^'"]+)['"]/, 1]
-        return version ? [['==', version]] : []
-      end
+      nil
+    end
 
-      if text.include?(':version')
-        version = text[/:version\s*=>\s*['"]([^'"]+)['"]/, 1]
-        return version ? [['==', version]] : []
-      end
+    def extract_version_range(text)
+      match = text.match(/['"]([^'"]+)['"]\s*\.\.\s*['"]([^'"]+)['"]/) ||
+              text.match(/:version\s*=>\s*([^\s]+)\s*\.\.\s*([^\s]+)/)
+      return nil unless match
 
-      text.scan(/(>=|<=|>|<|==|=|~>)?\s*([0-9]+(?:\.[0-9A-Za-z]+)*)/).map do |operator, version|
-        [operator.to_s.empty? ? '==' : operator, version]
+      Range.new(match[1], match[2])
+    end
+
+    def extract_version_array(text)
+      match = text.match(/\[([^\]]+)\]/)
+      return [] unless match
+
+      match[1].scan(/['"]([^'"]+)['"]/).flatten
+    end
+
+    def parse_operator_constraints(text)
+      return [] unless text =~ /(>=|<=|>|<|==|=|~>)/
+
+      text.scan(/(>=|<=|>|<|==|=|~>)\s*([0-9]+(?:\.[0-9A-Za-z]+)*)/).map do |operator, version|
+        [operator, version]
       end
+    end
+
+    def extract_bare_version(text)
+      match = text.match(/\A['"]?([0-9]+(?:\.[0-9A-Za-z]+)*)['"]?\z/)
+      match && match[1]
     end
 
     def compare(target, operator, required)
       case operator
+      when :version_or_higher
+        redmine_compare(required, target) <= 0
+      when :redmine_eq
+        redmine_compare(required, target) == 0
+      when :redmine_gte
+        redmine_compare(required, target) <= 0
+      when :redmine_lte
+        redmine_compare(required, target) >= 0
       when '>=', nil
-        target >= required
+        gem_version(target) >= gem_version(required)
       when '>'
-        target > required
+        gem_version(target) > gem_version(required)
       when '<='
-        target <= required
+        gem_version(target) <= gem_version(required)
       when '<'
-        target < required
+        gem_version(target) < gem_version(required)
       when '=', '=='
-        target == required
+        gem_version(target) == gem_version(required)
       when '~>'
-        target >= required && target < pessimistic_upper_bound(required)
+        target_version = gem_version(target)
+        required_version = gem_version(required)
+        target_version >= required_version && target_version < pessimistic_upper_bound(required_version)
       else
         false
       end
+    end
+
+    def redmine_compare(requirement_version, target_version)
+      requirement_parts = version_parts(requirement_version)
+      target_parts = version_parts(target_version)
+      requirement_parts <=> target_parts[0, requirement_parts.size]
+    end
+
+    def version_parts(value)
+      clean_version(value).split('.').map { |part| part.to_i }
+    end
+
+    def gem_version(value)
+      Gem::Version.new(clean_version(value))
     end
 
     def pessimistic_upper_bound(version)

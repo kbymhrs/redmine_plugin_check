@@ -152,3 +152,39 @@
 .plugin-check-help-table tbody tr:hover td {
   background: #fff8d9;
 }
+.plugin-check-table-shell {
+  height: 380px;
+  overflow: scroll;
+  border-bottom: 1px solid #ddd;
+}
+
+.plugin-check-plugins thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.plugin-check-risky-reasons {
+  margin: 4px 0 0;
+  padding-left: 16px;
+  text-align: left;
+  color: #9b1c1c;
+  font-weight: bold;
+  white-space: normal;
+}
+
+.plugin-check-risky-text {
+  color: #9b1c1c;
+  font-weight: bold;
+}
+
+.plugin-check-plugins th.plugin-check-id-column,
+.plugin-check-plugins td.plugin-check-id-column,
+.plugin-check-plugins td:nth-child(2) {
+  text-align: left !important;
+}
+
+.plugin-check-plugins td:first-child {
+  min-width: 220px;
+  vertical-align: top;
+}

@@ -22,7 +22,7 @@ Redmine::Plugin.register :redmine_plugin_check do
   name 'Plugin Compatibility Check'
   author 'kbymhrs'
   description 'Diagnoses installed Redmine plugins before a Redmine version upgrade.'
-  version '0.1.0'
+  version '0.1.1'
   url 'https://github.com/kbymhrs/redmine_plugin_check'
   author_url 'https://github.com/kbymhrs'
 

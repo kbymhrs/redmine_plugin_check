@@ -8,7 +8,7 @@ module RedminePluginCheck
   class LatestVersionChecker
     Result = Struct.new(:version, :source, :error)
 
-    USER_AGENT = 'RedminePluginCheck/0.1'.freeze
+    USER_AGENT = 'RedminePluginCheck/0.1.1'.freeze
     TIMEOUT_SECONDS = 3
 
     def self.github_repository_from_url(url)
@@ -40,6 +40,7 @@ module RedminePluginCheck
     end
 
     def call
+      @request_failed = false
       repository = github_repository
       return Result.new(nil, nil, :source_missing) unless repository
 
@@ -48,6 +49,7 @@ module RedminePluginCheck
       version ||= latest_git_tag(repository)
 
       return Result.new(version, source, nil) if text_present?(version)
+      return Result.new(nil, source, :request_failed) if @request_failed
 
       Result.new(nil, source, :version_unavailable)
     rescue StandardError
@@ -139,10 +141,14 @@ module RedminePluginCheck
         response = http.request(request)
       end
 
-      return nil unless response.is_a?(Net::HTTPSuccess)
+      unless response.is_a?(Net::HTTPSuccess)
+        @request_failed = true unless response.is_a?(Net::HTTPNotFound)
+        return nil
+      end
 
       JSON.parse(response.body)
     rescue StandardError
+      @request_failed = true
       nil
     end
 

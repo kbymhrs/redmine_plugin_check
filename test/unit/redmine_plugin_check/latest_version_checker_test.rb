@@ -37,4 +37,20 @@ class RedminePluginCheckLatestVersionCheckerTest < ActiveSupport::TestCase
       assert_equal ['redmine', 'redmine'], checker.send(:github_repository)
     end
   end
+  test 'returns request failed when github api cannot be reached' do
+    Dir.mktmpdir do |dir|
+      plugin = FakePlugin.new('https://github.com/redmine/redmine')
+      checker = RedminePluginCheck::LatestVersionChecker.new(plugin, dir)
+      checker.define_singleton_method(:get_json) do |_url|
+        @request_failed = true
+        nil
+      end
+
+      result = checker.call
+
+      assert_nil result.version
+      assert_equal 'https://github.com/redmine/redmine', result.source
+      assert_equal :request_failed, result.error
+    end
+  end
 end

@@ -15,6 +15,14 @@ module RedminePluginCheckHelper
     content_tag(:span, status, :class => "plugin-check-status #{css_class}")
   end
 
+  def plugin_check_name_label(plugin)
+    name = plugin.name.presence || '-'
+    return name unless plugin.latest_version_source.present?
+
+    link_to(name, plugin.latest_version_source,
+            :target => '_blank',
+            :rel => 'noopener noreferrer')
+  end
   def plugin_check_boolean_label(value)
     value ? l(:general_text_Yes) : l(:general_text_No)
   end
@@ -79,5 +87,31 @@ module RedminePluginCheckHelper
   def plugin_check_finding_label(finding)
     label = I18n.t("redmine_plugin_check.findings.#{finding.key}", :default => finding.key.to_s)
     "#{label} (#{finding.path})"
+  end
+
+  def plugin_check_risky_reason_labels(plugin)
+    return [] unless plugin.status.to_s == 'Risky'
+
+    reasons = []
+    if plugin.requires_redmine_satisfied == false
+      reasons << plugin_check_note_label(:target_version_outside_requires_redmine)
+    end
+
+    plugin.compatibility_findings.each do |finding|
+      next unless finding.severity.to_s == 'risky'
+
+      reasons << plugin_check_finding_label(finding)
+    end
+
+    reasons
+  end
+
+  def plugin_check_note_class(note)
+    risky_notes = [:target_version_outside_requires_redmine, :legacy_breaking_patterns_detected]
+    risky_notes.include?(note) ? 'plugin-check-risky-text' : nil
+  end
+
+  def plugin_check_finding_class(finding)
+    finding.severity.to_s == 'risky' ? 'plugin-check-risky-text' : nil
   end
 end

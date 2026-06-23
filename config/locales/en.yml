@@ -23,7 +23,7 @@ en:
   text_redmine_plugin_check_intro: "Read-only review of compatibility signals for installed plugins before a Redmine upgrade."
   redmine_plugin_check:
     column_help:
-      status: "Overall result from the target version and detected signals: OK, Warning, Unknown, or Risky."
+      status: "Overall result from the target version and detected signals: OK, Warning, Unknown, or Risky. For Risky results, key reasons are also shown in red."
       identifier: "The plugin id registered with Redmine::Plugin.register."
       name: "The plugin display name. '-' means the name is missing or could not be read."
       version: "The plugin version. '-' means the version is missing or could not be read."

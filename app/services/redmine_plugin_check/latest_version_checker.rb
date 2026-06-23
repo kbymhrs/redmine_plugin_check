@@ -4,11 +4,11 @@ require 'openssl'
 require 'timeout'
 require 'uri'
 
-module RedmineUpgradeAdvisor
+module RedminePluginCheck
   class LatestVersionChecker
     Result = Struct.new(:version, :source, :error)
 
-    USER_AGENT = 'RedmineUpgradeAdvisor/0.1'.freeze
+    USER_AGENT = 'RedminePluginCheck/0.1'.freeze
     TIMEOUT_SECONDS = 3
 
     def self.github_repository_from_url(url)

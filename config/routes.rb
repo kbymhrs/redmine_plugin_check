@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
   get 'plugin_check',
-      :to => 'redmine_upgrade_advisor#index',
+      :to => 'redmine_plugin_check#index',
       :as => 'plugin_check'
 end

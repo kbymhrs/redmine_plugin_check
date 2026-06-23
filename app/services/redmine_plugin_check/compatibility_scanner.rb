@@ -1,4 +1,4 @@
-module RedmineUpgradeAdvisor
+module RedminePluginCheck
   class CompatibilityScanner
     Finding = Struct.new(:key, :severity, :path)
 

@@ -1,4 +1,4 @@
-module RedmineUpgradeAdvisor
+module RedminePluginCheck
   class Analyzer
     Result = Struct.new(
       :redmine_version,
@@ -210,7 +210,6 @@ module RedmineUpgradeAdvisor
       notes << :requires_redmine_missing if requires_redmine.blank?
       notes << :target_version_outside_requires_redmine if requires_result == false
       notes << :requires_redmine_lower_bound_only if lower_bound_only
-      notes << :target_major_version_jump if target_major_jump
       notes << :legacy_compatibility_patterns_detected if compatibility_findings.any?
       notes << :legacy_breaking_patterns_detected if breaking_legacy_findings?(compatibility_findings)
       notes << :init_contains_redmine_version_condition if has_init_condition

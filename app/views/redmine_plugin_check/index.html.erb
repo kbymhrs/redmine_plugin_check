@@ -1,0 +1,146 @@
+<% html_title l(:label_plugin_compatibility_check) %>
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag 'redmine_plugin_check', :plugin => 'redmine_plugin_check' %>
+<% end %>
+
+<h2><%= l(:label_plugin_compatibility_check) %></h2>
+
+<p class="plugin-check-intro"><%= l(:text_redmine_plugin_check_intro) %></p>
+
+<div class="plugin-check-summary">
+  <div>
+    <strong><%= l(:label_current_redmine_version) %></strong>
+    <%= @report.redmine_version %>
+  </div>
+  <div>
+    <strong><%= l(:label_current_ruby_version) %></strong>
+    <%= @report.ruby_version %>
+  </div>
+  <div>
+    <strong><%= l(:label_current_rails_version) %></strong>
+    <%= @report.rails_version %>
+  </div>
+  <div>
+    <strong><%= l(:label_target_redmine_version) %></strong>
+    <%= @report.target_version.presence || '-' %>
+  </div>
+</div>
+
+<%= form_tag plugin_check_path, :method => :get, :class => 'plugin-check-form' do %>
+  <p>
+    <%= label_tag :target_version, l(:label_target_redmine_version) %>
+    <%= text_field_tag :target_version, @target_version, :size => 16, :placeholder => '6.0.0' %>
+    <span class="plugin-check-form-option">
+      <%= check_box_tag :check_latest, '1', @check_latest %>
+      <%= label_tag :check_latest, l(:label_check_latest_version) %>
+    </span>
+    <%= submit_tag l(:button_apply), :name => nil %>
+    <% csv_params = { :target_version => @target_version, :format => :csv } %>
+    <% csv_params[:check_latest] = '1' if @check_latest %>
+    <%= link_to l(:label_export_csv),
+                plugin_check_path(csv_params),
+                :class => 'icon icon-save' %>
+  </p>
+<% end %>
+
+<div class="autoscroll plugin-check-table-shell">
+  <table class="list plugin-check-plugins">
+    <colgroup>
+      <col class="plugin-check-status-col" />
+      <col class="plugin-check-id-col" />
+      <col class="plugin-check-name-col" />
+      <col class="plugin-check-version-col" />
+      <col class="plugin-check-latest-version-col" />
+      <col class="plugin-check-author-col" />
+      <col class="plugin-check-date-col" />
+      <col class="plugin-check-requires-col" />
+      <col class="plugin-check-flag-col" />
+      <col class="plugin-check-flag-col" />
+      <col class="plugin-check-flag-col" />
+      <col class="plugin-check-flag-col" />
+      <col class="plugin-check-flag-col" />
+      <col class="plugin-check-findings-col" />
+      <col class="plugin-check-notes-col" />
+    </colgroup>
+    <thead>
+      <tr>
+        <th><%= plugin_check_column_header(:field_status, :status) %></th>
+        <th><%= plugin_check_column_header(:field_identifier, :identifier) %></th>
+        <th><%= plugin_check_column_header(:field_name, :name) %></th>
+        <th><%= plugin_check_column_header(:field_version, :version) %></th>
+        <th><%= plugin_check_column_header(:label_latest_version, :latest_version) %></th>
+        <th><%= plugin_check_column_header(:field_author, :author) %></th>
+        <th><%= plugin_check_column_header(:label_last_modified_at, :last_modified_at) %></th>
+        <th><%= plugin_check_column_header(:label_requires_redmine, :requires_redmine) %></th>
+        <th><%= plugin_check_column_header(:label_requires_redmine_lower_bound_only, :requires_redmine_lower_bound_only) %></th>
+        <th><%= plugin_check_column_header(:label_target_major_jump, :target_major_jump) %></th>
+        <th><%= plugin_check_column_header(:label_redmine_condition_in_init, :redmine_condition_in_init) %></th>
+        <th><%= plugin_check_column_header(:label_has_migrations, :has_migrations) %></th>
+        <th><%= plugin_check_column_header(:label_has_gemfile, :has_gemfile) %></th>
+        <th class="plugin-check-findings-column"><%= plugin_check_column_header(:label_compatibility_findings, :compatibility_findings) %></th>
+        <th class="plugin-check-notes-column"><%= plugin_check_column_header(:label_notes, :notes) %></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @report.plugins.each do |plugin| %>
+        <tr>
+          <td><%= plugin_check_status_label(plugin.status) %></td>
+          <td><code><%= plugin.id %></code></td>
+          <td><%= plugin.name.presence || '-' %></td>
+          <td><%= plugin.version.presence || '-' %></td>
+          <td><%= plugin_check_latest_version_label(plugin, @check_latest) %></td>
+          <td><%= plugin.author.presence || '-' %></td>
+          <td><%= plugin.last_modified_at ? format_time(plugin.last_modified_at) : '-' %></td>
+          <td><%= plugin_check_requires_label(plugin) %></td>
+          <td><%= plugin_check_boolean_label(plugin.requires_redmine_lower_bound_only) %></td>
+          <td><%= plugin_check_boolean_label(plugin.target_major_jump) %></td>
+          <td><%= plugin_check_boolean_label(plugin.redmine_condition_in_init) %></td>
+          <td><%= plugin_check_boolean_label(plugin.has_migrations) %></td>
+          <td><%= plugin_check_boolean_label(plugin.has_gemfile) %></td>
+          <td class="plugin-check-findings-column">
+            <% if plugin.compatibility_findings.any? %>
+              <ul class="plugin-check-findings">
+                <% plugin.compatibility_findings.each do |finding| %>
+                  <li><%= plugin_check_finding_label(finding) %></li>
+                <% end %>
+              </ul>
+            <% else %>
+              -
+            <% end %>
+          </td>
+          <td class="plugin-check-notes-column">
+            <% if plugin.notes.any? %>
+              <ul class="plugin-check-notes">
+                <% plugin.notes.each do |note| %>
+                  <li><%= plugin_check_note_label(note) %></li>
+                <% end %>
+              </ul>
+            <% else %>
+              -
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<div class="plugin-check-help">
+  <h3><%= l(:label_plugin_check_column_help) %></h3>
+  <table class="plugin-check-help-table">
+    <thead>
+      <tr>
+        <th class="plugin-check-help-cell"><%= l(:label_plugin_check_help_column_name) %></th>
+        <th class="plugin-check-help-cell"><%= l(:label_plugin_check_help_column_description) %></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% plugin_check_column_help_items.each do |label_key, help_key| %>
+        <tr>
+          <th class="plugin-check-help-cell"><%= l(label_key) %></th>
+          <td class="plugin-check-help-cell"><%= plugin_check_column_help_text(help_key) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

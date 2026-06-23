@@ -1,5 +1,5 @@
-module RedmineUpgradeAdvisorHelper
-  def upgrade_advisor_status_label(status)
+module RedminePluginCheckHelper
+  def plugin_check_status_label(status)
     css_class =
       case status.to_s
       when 'OK'
@@ -12,21 +12,21 @@ module RedmineUpgradeAdvisorHelper
         'status-unknown'
       end
 
-    content_tag(:span, status, :class => "upgrade-advisor-status #{css_class}")
+    content_tag(:span, status, :class => "plugin-check-status #{css_class}")
   end
 
-  def upgrade_advisor_boolean_label(value)
+  def plugin_check_boolean_label(value)
     value ? l(:general_text_Yes) : l(:general_text_No)
   end
 
-  def upgrade_advisor_requires_label(plugin)
+  def plugin_check_requires_label(plugin)
     return plugin.requires_redmine.presence || '-' if plugin.requires_redmine_satisfied.nil?
 
     label = plugin.requires_redmine_satisfied ? 'OK' : 'Warning'
     "#{plugin.requires_redmine} (#{label})"
   end
 
-  def upgrade_advisor_latest_version_label(plugin, checked)
+  def plugin_check_latest_version_label(plugin, checked)
     return '-' unless checked
 
     if plugin.latest_version.present?
@@ -38,17 +38,17 @@ module RedmineUpgradeAdvisorHelper
     end
 
     error = plugin.latest_version_error.presence || :version_unavailable
-    I18n.t("redmine_upgrade_advisor.latest_version_errors.#{error}", :default => '-')
+    I18n.t("redmine_plugin_check.latest_version_errors.#{error}", :default => '-')
   end
 
-  def upgrade_advisor_column_header(label_key, help_key)
+  def plugin_check_column_header(label_key, help_key)
     content_tag(:span,
                 l(label_key),
-                :class => 'upgrade-advisor-column-help',
-                :title => upgrade_advisor_column_help_text(help_key))
+                :class => 'plugin-check-column-help',
+                :title => plugin_check_column_help_text(help_key))
   end
 
-  def upgrade_advisor_column_help_items
+  def plugin_check_column_help_items
     [
       [:field_status, :status],
       [:field_identifier, :identifier],
@@ -68,16 +68,16 @@ module RedmineUpgradeAdvisorHelper
     ]
   end
 
-  def upgrade_advisor_column_help_text(help_key)
-    I18n.t("redmine_upgrade_advisor.column_help.#{help_key}", :default => '')
+  def plugin_check_column_help_text(help_key)
+    I18n.t("redmine_plugin_check.column_help.#{help_key}", :default => '')
   end
 
-  def upgrade_advisor_note_label(note)
-    I18n.t("redmine_upgrade_advisor.notes.#{note}", :default => note.to_s)
+  def plugin_check_note_label(note)
+    I18n.t("redmine_plugin_check.notes.#{note}", :default => note.to_s)
   end
 
-  def upgrade_advisor_finding_label(finding)
-    label = I18n.t("redmine_upgrade_advisor.findings.#{finding.key}", :default => finding.key.to_s)
+  def plugin_check_finding_label(finding)
+    label = I18n.t("redmine_plugin_check.findings.#{finding.key}", :default => finding.key.to_s)
     "#{label} (#{finding.path})"
   end
 end

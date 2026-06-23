@@ -1,4 +1,4 @@
-module RedmineUpgradeAdvisor
+module RedminePluginCheck
   class VersionRequirement
     def initialize(requirement)
       @requirement = requirement

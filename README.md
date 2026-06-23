@@ -58,7 +58,7 @@ Redmine の `plugins` 配下にこのディレクトリを配置します。
 
 ```bash
 cd /path/to/redmine
-cp -r /path/to/redmine_upgrade_advisor plugins/redmine_upgrade_advisor
+cp -r /path/to/redmine_plugin_check plugins/redmine_plugin_check
 ```
 
 Redmine を再起動します。
@@ -96,15 +96,15 @@ MVP のため、判定は意図的に単純で保守的です。
 
 - `init.rb`: plugin 登録と管理メニュー追加。
 - `config/routes.rb`: `plugin_check` route 定義。
-- `app/controllers/redmine_upgrade_advisor_controller.rb`: 管理者画面と CSV export。
-- `app/services/redmine_upgrade_advisor/analyzer.rb`: installed plugins の解析と診断結果生成。
-- `app/services/redmine_upgrade_advisor/compatibility_scanner.rb`: plugin source 内の古い Rails/Redmine pattern を検出。
-- `app/services/redmine_upgrade_advisor/latest_version_checker.rb`: GitHub Releases/Tags から最新バージョンを best effort で取得。
-- `app/services/redmine_upgrade_advisor/version_requirement.rb`: `requires_redmine` と target version の簡易比較。
-- `app/views/redmine_upgrade_advisor/index.html.erb`: summary、target version form、診断テーブル、CSV link。
-- `assets/stylesheets/redmine_upgrade_advisor.css`: Redmine 管理画面向けの軽いスタイル。
+- `app/controllers/redmine_plugin_check_controller.rb`: 管理者画面と CSV export。
+- `app/services/redmine_plugin_check/analyzer.rb`: installed plugins の解析と診断結果生成。
+- `app/services/redmine_plugin_check/compatibility_scanner.rb`: plugin source 内の古い Rails/Redmine pattern を検出。
+- `app/services/redmine_plugin_check/latest_version_checker.rb`: GitHub Releases/Tags から最新バージョンを best effort で取得。
+- `app/services/redmine_plugin_check/version_requirement.rb`: `requires_redmine` と target version の簡易比較。
+- `app/views/redmine_plugin_check/index.html.erb`: summary、target version form、診断テーブル、CSV link。
+- `assets/stylesheets/redmine_plugin_check.css`: Redmine 管理画面向けの軽いスタイル。
 - `config/locales/en.yml` / `config/locales/ja.yml`: 英語・日本語ラベル。
-- `test/unit/redmine_upgrade_advisor/*_test.rb`: service class のテスト。
+- `test/unit/redmine_plugin_check/*_test.rb`: service class のテスト。
 
 ## 手元で動かす手順
 
@@ -114,18 +114,18 @@ Redmine 3.3.x / 3.4.x / 4.x:
 
 ```bash
 bundle exec rake redmine:plugins
-bundle exec rake test TEST=plugins/redmine_upgrade_advisor/test/unit/redmine_upgrade_advisor/version_requirement_test.rb
-bundle exec rake test TEST=plugins/redmine_upgrade_advisor/test/unit/redmine_upgrade_advisor/analyzer_test.rb
-bundle exec rake test TEST=plugins/redmine_upgrade_advisor/test/unit/redmine_upgrade_advisor/latest_version_checker_test.rb
+bundle exec rake test TEST=plugins/redmine_plugin_check/test/unit/redmine_plugin_check/version_requirement_test.rb
+bundle exec rake test TEST=plugins/redmine_plugin_check/test/unit/redmine_plugin_check/analyzer_test.rb
+bundle exec rake test TEST=plugins/redmine_plugin_check/test/unit/redmine_plugin_check/latest_version_checker_test.rb
 ```
 
 Redmine 5.x / 6.x:
 
 ```bash
 bundle exec rails redmine:plugins
-bundle exec rails test plugins/redmine_upgrade_advisor/test/unit/redmine_upgrade_advisor/version_requirement_test.rb
-bundle exec rails test plugins/redmine_upgrade_advisor/test/unit/redmine_upgrade_advisor/analyzer_test.rb
-bundle exec rails test plugins/redmine_upgrade_advisor/test/unit/redmine_upgrade_advisor/latest_version_checker_test.rb
+bundle exec rails test plugins/redmine_plugin_check/test/unit/redmine_plugin_check/version_requirement_test.rb
+bundle exec rails test plugins/redmine_plugin_check/test/unit/redmine_plugin_check/analyzer_test.rb
+bundle exec rails test plugins/redmine_plugin_check/test/unit/redmine_plugin_check/latest_version_checker_test.rb
 ```
 
 画面確認:

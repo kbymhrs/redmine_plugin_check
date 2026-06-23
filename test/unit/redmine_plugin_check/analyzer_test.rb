@@ -2,12 +2,12 @@ require File.expand_path('../../test_helper', File.dirname(__FILE__))
 
 require 'fileutils'
 require 'tmpdir'
-require_relative '../../../app/services/redmine_upgrade_advisor/compatibility_scanner'
-require_relative '../../../app/services/redmine_upgrade_advisor/latest_version_checker'
-require_relative '../../../app/services/redmine_upgrade_advisor/version_requirement'
-require_relative '../../../app/services/redmine_upgrade_advisor/analyzer'
+require_relative '../../../app/services/redmine_plugin_check/compatibility_scanner' unless defined?(RedminePluginCheck::CompatibilityScanner)
+require_relative '../../../app/services/redmine_plugin_check/latest_version_checker' unless defined?(RedminePluginCheck::LatestVersionChecker)
+require_relative '../../../app/services/redmine_plugin_check/version_requirement' unless defined?(RedminePluginCheck::VersionRequirement)
+require_relative '../../../app/services/redmine_plugin_check/analyzer' unless defined?(RedminePluginCheck::Analyzer)
 
-class RedmineUpgradeAdvisorAnalyzerTest < ActiveSupport::TestCase
+class RedminePluginCheckAnalyzerTest < ActiveSupport::TestCase
   FakePlugin = Struct.new(:id, :name, :version, :author, :directory, :requires_redmine)
 
   test 'marks plugin risky when target version does not satisfy requires_redmine' do
@@ -17,7 +17,7 @@ class RedmineUpgradeAdvisorAnalyzerTest < ActiveSupport::TestCase
       File.write(File.join(plugin_dir, 'init.rb'), "Redmine::Plugin.register :legacy_plugin do\nend\n")
       plugin = FakePlugin.new(:legacy_plugin, 'Legacy Plugin', '1.0.0', 'ACME', plugin_dir, { :version => '5.0.0' })
 
-      report = RedmineUpgradeAdvisor::Analyzer.new(:target_version => '6.0.0', :plugins => [plugin]).call
+      report = RedminePluginCheck::Analyzer.new(:target_version => '6.0.0', :plugins => [plugin]).call
 
       assert_equal 'Risky', report.plugins.first.status
     end
@@ -30,7 +30,7 @@ class RedmineUpgradeAdvisorAnalyzerTest < ActiveSupport::TestCase
       File.write(File.join(plugin_dir, 'init.rb'), "Redmine::Plugin.register :migrating_plugin do\nend\n")
       plugin = FakePlugin.new(:migrating_plugin, 'Migrating Plugin', '1.0.0', 'ACME', plugin_dir, { :version_or_higher => '5.0.0' })
 
-      report = RedmineUpgradeAdvisor::Analyzer.new(:target_version => '6.0.0', :plugins => [plugin]).call
+      report = RedminePluginCheck::Analyzer.new(:target_version => '6.0.0', :plugins => [plugin]).call
 
       assert_equal 'Warning', report.plugins.first.status
       assert report.plugins.first.has_migrations
@@ -44,7 +44,7 @@ class RedmineUpgradeAdvisorAnalyzerTest < ActiveSupport::TestCase
       File.write(File.join(plugin_dir, 'init.rb'), "Redmine::Plugin.register :lower_bound_plugin do\nend\n")
       plugin = FakePlugin.new(:lower_bound_plugin, 'Lower Bound Plugin', '1.0.0', 'ACME', plugin_dir, { :version_or_higher => '3.3.0' })
 
-      report = RedmineUpgradeAdvisor::Analyzer.new(:target_version => '6.0.0', :plugins => [plugin]).call
+      report = RedminePluginCheck::Analyzer.new(:target_version => '6.0.0', :plugins => [plugin]).call
       plugin_report = report.plugins.first
 
       assert_equal 'OK', plugin_report.status
@@ -63,7 +63,7 @@ class RedmineUpgradeAdvisorAnalyzerTest < ActiveSupport::TestCase
       File.write(File.join(plugin_dir, 'lib', 'patch.rb'), "base.class_eval do\n  alias_method_chain :foo, :bar\nend\n")
       plugin = FakePlugin.new(:legacy_api_plugin, 'Legacy API Plugin', '1.0.0', 'ACME', plugin_dir, { :version_or_higher => '3.3.0' })
 
-      report = RedmineUpgradeAdvisor::Analyzer.new(:target_version => '6.0.0', :plugins => [plugin]).call
+      report = RedminePluginCheck::Analyzer.new(:target_version => '6.0.0', :plugins => [plugin]).call
       plugin_report = report.plugins.first
 
       assert_equal 'Risky', plugin_report.status

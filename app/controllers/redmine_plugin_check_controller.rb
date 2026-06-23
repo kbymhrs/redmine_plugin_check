@@ -1,15 +1,15 @@
-class RedmineUpgradeAdvisorController < ApplicationController
+class RedminePluginCheckController < ApplicationController
   prepend_view_path File.expand_path('../../views', __FILE__)
 
   layout 'admin'
-  helper RedmineUpgradeAdvisorHelper
+  helper RedminePluginCheckHelper
 
-  before_filter :require_admin
+  before_action :require_admin
 
   def index
     @target_version = params[:target_version].to_s.strip
     @check_latest = params[:check_latest].to_s == '1'
-    @report = RedmineUpgradeAdvisor::Analyzer.new(
+    @report = RedminePluginCheck::Analyzer.new(
       :target_version => @target_version,
       :check_latest => @check_latest
     ).call
@@ -78,13 +78,13 @@ class RedmineUpgradeAdvisorController < ApplicationController
 
   def localized_notes(notes)
     notes.map do |note|
-      I18n.t("redmine_upgrade_advisor.notes.#{note}", :default => note.to_s)
+      I18n.t("redmine_plugin_check.notes.#{note}", :default => note.to_s)
     end
   end
 
   def localized_findings(findings)
     findings.map do |finding|
-      label = I18n.t("redmine_upgrade_advisor.findings.#{finding.key}", :default => finding.key.to_s)
+      label = I18n.t("redmine_plugin_check.findings.#{finding.key}", :default => finding.key.to_s)
       "#{label} (#{finding.path})"
     end
   end
@@ -92,7 +92,7 @@ class RedmineUpgradeAdvisorController < ApplicationController
   def localized_latest_version_error(error)
     return nil if error.blank?
 
-    I18n.t("redmine_upgrade_advisor.latest_version_errors.#{error}", :default => error.to_s)
+    I18n.t("redmine_plugin_check.latest_version_errors.#{error}", :default => error.to_s)
   end
 
   def formatted_time(value)

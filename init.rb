@@ -10,12 +10,12 @@ Rails.configuration.autoload_paths += [
 ]
 
 Rails.configuration.to_prepare do
-  require_dependency File.join(plugin_path, 'app/services/redmine_upgrade_advisor/version_requirement')
-  require_dependency File.join(plugin_path, 'app/services/redmine_upgrade_advisor/compatibility_scanner')
-  require_dependency File.join(plugin_path, 'app/services/redmine_upgrade_advisor/latest_version_checker')
-  require_dependency File.join(plugin_path, 'app/services/redmine_upgrade_advisor/analyzer')
-  require_dependency File.join(plugin_path, 'app/helpers/redmine_upgrade_advisor_helper')
-  require_dependency File.join(plugin_path, 'app/controllers/redmine_upgrade_advisor_controller')
+  require_dependency File.join(plugin_path, 'app/services/redmine_plugin_check/version_requirement')
+  require_dependency File.join(plugin_path, 'app/services/redmine_plugin_check/compatibility_scanner')
+  require_dependency File.join(plugin_path, 'app/services/redmine_plugin_check/latest_version_checker')
+  require_dependency File.join(plugin_path, 'app/services/redmine_plugin_check/analyzer')
+  require_dependency File.join(plugin_path, 'app/helpers/redmine_plugin_check_helper')
+  require_dependency File.join(plugin_path, 'app/controllers/redmine_plugin_check_controller')
 end
 
 Redmine::Plugin.register :redmine_plugin_check do
@@ -30,7 +30,7 @@ Redmine::Plugin.register :redmine_plugin_check do
 
   menu :admin_menu,
        :plugin_check,
-       { :controller => 'redmine_upgrade_advisor', :action => 'index' },
+       { :controller => 'redmine_plugin_check', :action => 'index' },
        :caption => :label_redmine_plugin_check,
        :html => { :class => 'icon icon-reload' }
 end

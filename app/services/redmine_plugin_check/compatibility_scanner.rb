@@ -9,7 +9,7 @@ module RedminePluginCheck
     SKIPPED_BASENAMES = %w[compatibility_scanner.rb].freeze
 
     PATTERNS = [
-      [:alias_method_chain, 'risky', /alias_method_chain/],
+      [:alias_method_chain, 'risky', /\balias_method_chain\b\s+[:'\"A-Za-z_]/],
       [:dispatcher_to_prepare, 'risky', /\bDispatcher\.to_prepare\b/],
       [:require_dispatcher, 'risky', /require_dependency\s+['"]dispatcher['"]/],
       [:before_filter, 'warning', /\b(before_filter|after_filter|around_filter)\b/],

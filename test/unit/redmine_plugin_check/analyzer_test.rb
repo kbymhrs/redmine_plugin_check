@@ -71,4 +71,19 @@ class RedminePluginCheckAnalyzerTest < ActiveSupport::TestCase
       assert_includes plugin_report.notes, :legacy_breaking_patterns_detected
     end
   end
+  test 'does not treat explanatory alias method chain text as a risky call' do
+    Dir.mktmpdir do |dir|
+      plugin_dir = File.join(dir, 'self_documenting_plugin')
+      FileUtils.mkdir_p(File.join(plugin_dir, 'app', 'helpers'))
+      File.write(File.join(plugin_dir, 'init.rb'), "Redmine::Plugin.register :self_documenting_plugin do\nend\n")
+      File.write(File.join(plugin_dir, 'app', 'helpers', 'helper.rb'), "NOTES = [:alias_method_chain_breaking]\n")
+      plugin = FakePlugin.new(:self_documenting_plugin, 'Self Documenting Plugin', '1.0.0', 'ACME', plugin_dir, { :version_or_higher => '3.3.0' })
+
+      report = RedminePluginCheck::Analyzer.new(:target_version => '6.0.0', :plugins => [plugin]).call
+      plugin_report = report.plugins.first
+
+      assert_equal 'OK', plugin_report.status
+      assert plugin_report.compatibility_findings.empty?
+    end
+  end
 end

@@ -43,7 +43,7 @@
   </p>
 <% end %>
 
-<div class="autoscroll plugin-check-table-shell">
+<div class="autoscroll plugin-check-table-shell<%= @report.plugins.size >= 5 ? ' plugin-check-table-shell-scroll' : '' %>">
   <table class="list plugin-check-plugins">
     <colgroup>
       <col class="plugin-check-status-col" />

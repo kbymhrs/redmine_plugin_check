@@ -153,9 +153,13 @@
   background: #fff8d9;
 }
 .plugin-check-table-shell {
+  overflow-x: auto;
+  border-bottom: 1px solid #ddd;
+}
+
+.plugin-check-table-shell-scroll {
   height: 480px;
   overflow: scroll;
-  border-bottom: 1px solid #ddd;
 }
 
 .plugin-check-plugins thead th {

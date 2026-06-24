@@ -23,6 +23,17 @@ module RedminePluginCheckHelper
             :target => '_blank',
             :rel => 'noopener noreferrer')
   end
+  def plugin_check_status_filter_options
+    [
+      [l(:label_status_filter_all), 'all'],
+      [l(:label_status_filter_needs_review), 'needs_review'],
+      ['Risky', 'Risky'],
+      ['Warning', 'Warning'],
+      ['Unknown', 'Unknown'],
+      ['OK', 'OK']
+    ]
+  end
+
   def plugin_check_boolean_label(value)
     value ? l(:general_text_Yes) : l(:general_text_No)
   end

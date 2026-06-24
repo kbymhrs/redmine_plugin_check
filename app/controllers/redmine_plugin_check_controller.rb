@@ -9,15 +9,18 @@ class RedminePluginCheckController < ApplicationController
   def index
     @target_version = params[:target_version].to_s.strip
     @check_latest = params[:check_latest].to_s == '1'
+    @status_filter = normalize_status_filter(params[:status_filter])
     @report = RedminePluginCheck::Analyzer.new(
       :target_version => @target_version,
       :check_latest => @check_latest
     ).call
 
+    @plugins = filtered_plugins(@report.plugins)
+
     respond_to do |format|
       format.html
       format.csv do
-        send_data csv_export(@report),
+        send_data csv_export(@plugins),
                   :filename => csv_filename,
                   :type => 'text/csv; charset=utf-8'
       end
@@ -26,7 +29,23 @@ class RedminePluginCheckController < ApplicationController
 
   private
 
-  def csv_export(report)
+  def normalize_status_filter(value)
+    filter = value.to_s
+    allowed = %w[all needs_review Risky Warning Unknown OK]
+    allowed.include?(filter) ? filter : 'all'
+  end
+
+  def filtered_plugins(plugins)
+    case @status_filter
+    when 'needs_review'
+      plugins.select { |plugin| %w[Risky Warning Unknown].include?(plugin.status.to_s) }
+    when 'Risky', 'Warning', 'Unknown', 'OK'
+      plugins.select { |plugin| plugin.status.to_s == @status_filter }
+    else
+      plugins
+    end
+  end
+  def csv_export(plugins)
     require 'csv'
 
     CSV.generate(:headers => true) do |csv|
@@ -51,7 +70,7 @@ class RedminePluginCheckController < ApplicationController
         'notes'
       ]
 
-      report.plugins.each do |plugin|
+      plugins.each do |plugin|
         csv << [
           plugin.status,
           plugin.id,

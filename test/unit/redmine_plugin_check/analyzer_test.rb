@@ -86,4 +86,19 @@ class RedminePluginCheckAnalyzerTest < ActiveSupport::TestCase
       assert plugin_report.compatibility_findings.empty?
     end
   end
+  test 'ignores legacy api names in ruby comments' do
+    Dir.mktmpdir do |dir|
+      plugin_dir = File.join(dir, 'commented_plugin')
+      FileUtils.mkdir_p(File.join(plugin_dir, 'lib'))
+      File.write(File.join(plugin_dir, 'init.rb'), "Redmine::Plugin.register :commented_plugin do\nend\n")
+      File.write(File.join(plugin_dir, 'lib', 'patch.rb'), "# alias_method_chain :foo, :bar\n# before_filter :old\n")
+      plugin = FakePlugin.new(:commented_plugin, 'Commented Plugin', '1.0.0', 'ACME', plugin_dir, { :version_or_higher => '3.3.0' })
+
+      report = RedminePluginCheck::Analyzer.new(:target_version => '6.0.0', :plugins => [plugin]).call
+      plugin_report = report.plugins.first
+
+      assert_equal 'OK', plugin_report.status
+      assert plugin_report.compatibility_findings.empty?
+    end
+  end
 end

@@ -27,7 +27,7 @@ module RedminePluginCheck
       findings = []
 
       scanned_files.each do |path|
-        content = read_file(path)
+        content = scanner_content(path)
         next if content.nil?
 
         PATTERNS.each do |key, severity, pattern|
@@ -72,6 +72,27 @@ module RedminePluginCheck
       end
     end
 
+    def scanner_content(path)
+      content = read_file(path)
+      return nil if content.nil?
+
+      strip_comments(path, content)
+    end
+
+    def strip_comments(path, content)
+      extension = File.extname(path)
+      basename = File.basename(path)
+
+      if %w[.rb .rake .gemspec .ru].include?(extension) || %w[Gemfile Rakefile config.ru].include?(basename)
+        return content.lines.reject { |line| line =~ /^\s*#/ }.join
+      end
+
+      if extension == '.erb'
+        return content.gsub(/<%#.*?%>/m, '').gsub(/<!--.*?-->/m, '')
+      end
+
+      content
+    end
     def read_file(path)
       File.read(path)
     rescue Errno::ENOENT, Errno::EACCES, Encoding::InvalidByteSequenceError, Encoding::UndefinedConversionError

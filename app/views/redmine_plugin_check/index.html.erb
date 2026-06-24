@@ -31,11 +31,15 @@
     <%= label_tag :target_version, l(:label_target_redmine_version) %>
     <%= text_field_tag :target_version, @target_version, :size => 16, :placeholder => '6.0.0' %>
     <span class="plugin-check-form-option">
+      <%= label_tag :status_filter, l(:label_status_filter) %>
+      <%= select_tag :status_filter, options_for_select(plugin_check_status_filter_options, @status_filter) %>
+    </span>
+    <span class="plugin-check-form-option">
       <%= check_box_tag :check_latest, '1', @check_latest %>
       <%= label_tag :check_latest, l(:label_check_latest_version) %>
     </span>
     <%= submit_tag l(:button_apply), :name => nil %>
-    <% csv_params = { :target_version => @target_version, :format => :csv } %>
+    <% csv_params = { :target_version => @target_version, :status_filter => @status_filter, :format => :csv } %>
     <% csv_params[:check_latest] = '1' if @check_latest %>
     <%= link_to l(:label_export_csv),
                 plugin_check_path(csv_params),
@@ -43,7 +47,7 @@
   </p>
 <% end %>
 
-<div class="autoscroll plugin-check-table-shell<%= @report.plugins.size >= 5 ? ' plugin-check-table-shell-scroll' : '' %>">
+<div class="autoscroll plugin-check-table-shell<%= @plugins.size >= 5 ? ' plugin-check-table-shell-scroll' : '' %>">
   <table class="list plugin-check-plugins">
     <colgroup>
       <col class="plugin-check-status-col" />
@@ -82,7 +86,7 @@
       </tr>
     </thead>
     <tbody>
-      <% @report.plugins.each do |plugin| %>
+      <% @plugins.each do |plugin| %>
         <tr>
           <td><%= plugin_check_status_label(plugin.status) %></td>
           <td class="plugin-check-name-column"><%= plugin_check_name_label(plugin) %></td>

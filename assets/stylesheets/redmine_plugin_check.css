@@ -153,7 +153,7 @@
   background: #fff8d9;
 }
 .plugin-check-table-shell {
-  height: 380px;
+  height: 480px;
   overflow: scroll;
   border-bottom: 1px solid #ddd;
 }
@@ -178,13 +178,22 @@
   font-weight: bold;
 }
 
+.plugin-check-plugins .plugin-check-name-col {
+  width: 150px;
+}
+
+.plugin-check-plugins .plugin-check-id-col {
+  width: 260px;
+}
+
+.plugin-check-plugins th.plugin-check-name-column,
+.plugin-check-plugins td.plugin-check-name-column,
 .plugin-check-plugins th.plugin-check-id-column,
-.plugin-check-plugins td.plugin-check-id-column,
-.plugin-check-plugins td:nth-child(2) {
+.plugin-check-plugins td.plugin-check-id-column {
   text-align: left !important;
+  vertical-align: top;
 }
 
 .plugin-check-plugins td:first-child {
-  min-width: 220px;
   vertical-align: top;
 }

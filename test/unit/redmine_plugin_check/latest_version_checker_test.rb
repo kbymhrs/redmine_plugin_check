@@ -45,12 +45,33 @@ class RedminePluginCheckLatestVersionCheckerTest < ActiveSupport::TestCase
         @request_failed = true
         nil
       end
+      checker.define_singleton_method(:get_text) do |_url|
+        @request_failed = true
+        nil
+      end
 
       result = checker.call
 
       assert_nil result.version
       assert_equal 'https://github.com/redmine/redmine', result.source
       assert_equal :request_failed, result.error
+    end
+  end
+
+  test 'falls back to github tags page html' do
+    Dir.mktmpdir do |dir|
+      plugin = FakePlugin.new('https://github.com/redmine/redmine')
+      checker = RedminePluginCheck::LatestVersionChecker.new(plugin, dir)
+      checker.define_singleton_method(:get_json) { |_url| nil }
+      checker.define_singleton_method(:get_text) do |_url|
+        '<a href="/redmine/redmine/releases/tag/v6.1.2">v6.1.2</a>'
+      end
+
+      result = checker.call
+
+      assert_equal 'v6.1.2', result.version
+      assert_equal 'https://github.com/redmine/redmine', result.source
+      assert_nil result.error
     end
   end
 end

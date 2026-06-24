@@ -23,7 +23,7 @@ en:
   text_redmine_plugin_check_intro: "Read-only review of compatibility signals for installed plugins before a Redmine upgrade."
   redmine_plugin_check:
     column_help:
-      status: "Overall result from the target version and detected signals: OK, Warning, Unknown, or Risky. For Risky results, key reasons are also shown in red."
+      status: "Overall result from the target version and detected signals: OK, Warning, Unknown, or Risky."
       identifier: "The plugin id registered with Redmine::Plugin.register."
       name: "The plugin display name. '-' means the name is missing or could not be read."
       version: "The plugin version. '-' means the version is missing or could not be read."
@@ -57,6 +57,9 @@ en:
       requires_redmine_lower_bound_only: "requires_redmine is a lower-bound declaration; newer Redmine versions still need separate verification"
       legacy_compatibility_patterns_detected: "Legacy Rails/Redmine compatibility patterns were detected"
       legacy_breaking_patterns_detected: "Potentially breaking legacy patterns were detected for the target version"
+      alias_method_chain_breaking: "alias_method_chain was removed in Rails 5+, so this plugin is likely to break on the target version"
+      dispatcher_to_prepare_breaking: "Dispatcher.to_prepare is an old Rails/Redmine API and may break on the target version"
+      require_dispatcher_breaking: "Requiring dispatcher uses an old Redmine API and may break on the target version"
       init_contains_redmine_version_condition: "init.rb contains a Redmine version condition"
       has_database_migrations: "Plugin has database migrations"
       has_plugin_gemfile: "Plugin has its own Gemfile"

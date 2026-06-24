@@ -47,8 +47,8 @@
   <table class="list plugin-check-plugins">
     <colgroup>
       <col class="plugin-check-status-col" />
-      <col class="plugin-check-id-col" />
       <col class="plugin-check-name-col" />
+      <col class="plugin-check-id-col" />
       <col class="plugin-check-version-col" />
       <col class="plugin-check-latest-version-col" />
       <col class="plugin-check-author-col" />
@@ -65,8 +65,8 @@
     <thead>
       <tr>
         <th><%= plugin_check_column_header(:field_status, :status) %></th>
-        <th><%= plugin_check_column_header(:field_identifier, :identifier) %></th>
-        <th><%= plugin_check_column_header(:field_name, :name) %></th>
+        <th class="plugin-check-name-column"><%= plugin_check_column_header(:field_name, :name) %></th>
+        <th class="plugin-check-id-column"><%= plugin_check_column_header(:field_identifier, :identifier) %></th>
         <th><%= plugin_check_column_header(:field_version, :version) %></th>
         <th><%= plugin_check_column_header(:label_latest_version, :latest_version) %></th>
         <th><%= plugin_check_column_header(:field_author, :author) %></th>
@@ -84,19 +84,9 @@
     <tbody>
       <% @report.plugins.each do |plugin| %>
         <tr>
-          <td>
-            <%= plugin_check_status_label(plugin.status) %>
-            <% risky_reasons = plugin_check_risky_reason_labels(plugin) %>
-            <% if risky_reasons.any? %>
-              <ul class="plugin-check-risky-reasons">
-                <% risky_reasons.each do |reason| %>
-                  <li><%= reason %></li>
-                <% end %>
-              </ul>
-            <% end %>
-          </td>
+          <td><%= plugin_check_status_label(plugin.status) %></td>
+          <td class="plugin-check-name-column"><%= plugin_check_name_label(plugin) %></td>
           <td class="plugin-check-id-column"><code><%= plugin.id %></code></td>
-          <td><%= plugin_check_name_label(plugin) %></td>
           <td><%= plugin.version.presence || '-' %></td>
           <td><%= plugin_check_latest_version_label(plugin, @check_latest) %></td>
           <td><%= plugin.author.presence || '-' %></td>

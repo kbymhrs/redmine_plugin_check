@@ -23,7 +23,7 @@ ja:
   text_redmine_plugin_check_intro: "Redmine アップグレード前に、インストール済み plugin の互換性シグナルを読み取り専用で確認します。"
   redmine_plugin_check:
     column_help:
-      status: "入力した移行先バージョンと検出結果から、OK / Warning / Unknown / Risky の総合判定を表示します。Risky の場合は主な理由も赤字で表示します。"
+      status: "入力した移行先バージョンと検出結果から、OK / Warning / Unknown / Risky の総合判定を表示します。"
       identifier: "Redmine::Plugin.register で登録された plugin id です。"
       name: "plugin の表示名です。「-」は name が未設定または取得できないことを示します。"
       version: "plugin の version です。「-」は version が未設定または取得できないことを示します。"
@@ -57,6 +57,9 @@ ja:
       requires_redmine_lower_bound_only: "requires_redmine は下限指定です。新しい Redmine での動作確認は別途必要です"
       legacy_compatibility_patterns_detected: "古い Rails/Redmine 互換パターンを検出しました"
       legacy_breaking_patterns_detected: "移行先で壊れる可能性がある古いパターンを検出しました"
+      alias_method_chain_breaking: "alias_method_chain は Rails 5 以降で削除されるため、移行先で動かない可能性が高いです"
+      dispatcher_to_prepare_breaking: "Dispatcher.to_prepare は古い Rails/Redmine API のため、移行先で動かない可能性があります"
+      require_dispatcher_breaking: "dispatcher の require は古い Redmine API のため、移行先で動かない可能性があります"
       init_contains_redmine_version_condition: "init.rb に Redmine バージョン条件らしき記述があります"
       has_database_migrations: "db/migrate があります"
       has_plugin_gemfile: "プラグイン独自の Gemfile があります"

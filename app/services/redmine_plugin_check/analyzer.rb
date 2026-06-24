@@ -212,6 +212,9 @@ module RedminePluginCheck
       notes << :requires_redmine_lower_bound_only if lower_bound_only
       notes << :legacy_compatibility_patterns_detected if compatibility_findings.any?
       notes << :legacy_breaking_patterns_detected if breaking_legacy_findings?(compatibility_findings)
+      notes << :alias_method_chain_breaking if finding_key?(compatibility_findings, :alias_method_chain)
+      notes << :dispatcher_to_prepare_breaking if finding_key?(compatibility_findings, :dispatcher_to_prepare)
+      notes << :require_dispatcher_breaking if finding_key?(compatibility_findings, :require_dispatcher)
       notes << :init_contains_redmine_version_condition if has_init_condition
       notes << :has_database_migrations if has_migrations
       notes << :has_plugin_gemfile if has_gemfile
@@ -245,6 +248,10 @@ module RedminePluginCheck
       return false unless target_major_at_least?(4)
 
       compatibility_findings.any? { |finding| finding.severity == 'risky' }
+    end
+
+    def finding_key?(compatibility_findings, key)
+      compatibility_findings.any? { |finding| finding.key.to_sym == key }
     end
 
     def target_major_version_jump?

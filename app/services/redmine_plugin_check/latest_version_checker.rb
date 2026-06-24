@@ -47,6 +47,7 @@ module RedminePluginCheck
       source = github_repository_url(repository)
       version = latest_release_tag(repository)
       version ||= latest_git_tag(repository)
+      version ||= latest_tag_from_github_tags_page(repository)
 
       return Result.new(version, source, nil) if text_present?(version)
       return Result.new(nil, source, :request_failed) if @request_failed
@@ -128,6 +129,49 @@ module RedminePluginCheck
       data.first['name']
     end
 
+    def latest_tag_from_github_tags_page(repository)
+      html = get_text(github_repository_url(repository) + '/tags')
+      return nil unless text_present?(html)
+
+      owner, repo = repository
+      release_path = Regexp.escape("/#{owner}/#{repo}/releases/tag/")
+      match = html.match(/href=["']#{release_path}([^"'#?]+)["']/i)
+      return cleanup_html_tag(match[1]) if match
+
+      tree_path = Regexp.escape("/#{owner}/#{repo}/tree/")
+      match = html.match(/href=["']#{tree_path}([^"'#?]+)["']/i)
+      match && cleanup_html_tag(match[1])
+    end
+
+    def cleanup_html_tag(value)
+      text = value.to_s.gsub('&amp;', '&')
+      URI.decode_www_form_component(text)
+    rescue StandardError
+      value.to_s
+    end
+
+    def get_text(url)
+      uri = URI.parse(url)
+      response = nil
+
+      Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https',
+                                      :open_timeout => TIMEOUT_SECONDS,
+                                      :read_timeout => TIMEOUT_SECONDS) do |http|
+        request = Net::HTTP::Get.new(uri.request_uri)
+        request['User-Agent'] = USER_AGENT
+        response = http.request(request)
+      end
+
+      unless response.is_a?(Net::HTTPSuccess)
+        @request_failed = true unless response.is_a?(Net::HTTPNotFound)
+        return nil
+      end
+
+      response.body
+    rescue StandardError
+      @request_failed = true
+      nil
+    end
     def get_json(url)
       uri = URI.parse(url)
       response = nil

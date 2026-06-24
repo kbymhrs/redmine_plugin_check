@@ -59,8 +59,8 @@ module RedminePluginCheckHelper
   def plugin_check_column_help_items
     [
       [:field_status, :status],
-      [:field_identifier, :identifier],
       [:field_name, :name],
+      [:field_identifier, :identifier],
       [:field_version, :version],
       [:label_latest_version, :latest_version],
       [:field_author, :author],
@@ -89,25 +89,14 @@ module RedminePluginCheckHelper
     "#{label} (#{finding.path})"
   end
 
-  def plugin_check_risky_reason_labels(plugin)
-    return [] unless plugin.status.to_s == 'Risky'
-
-    reasons = []
-    if plugin.requires_redmine_satisfied == false
-      reasons << plugin_check_note_label(:target_version_outside_requires_redmine)
-    end
-
-    plugin.compatibility_findings.each do |finding|
-      next unless finding.severity.to_s == 'risky'
-
-      reasons << plugin_check_finding_label(finding)
-    end
-
-    reasons
-  end
-
   def plugin_check_note_class(note)
-    risky_notes = [:target_version_outside_requires_redmine, :legacy_breaking_patterns_detected]
+    risky_notes = [
+      :target_version_outside_requires_redmine,
+      :legacy_breaking_patterns_detected,
+      :alias_method_chain_breaking,
+      :dispatcher_to_prepare_breaking,
+      :require_dispatcher_breaking
+    ]
     risky_notes.include?(note) ? 'plugin-check-risky-text' : nil
   end
 

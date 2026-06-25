@@ -41,6 +41,7 @@ module RedminePluginCheck
 
     def call
       @request_failed = false
+      @latest_error = nil
       repository = github_repository
       return Result.new(nil, nil, :source_missing) unless repository
 
@@ -50,7 +51,8 @@ module RedminePluginCheck
       version ||= latest_tag_from_github_tags_page(repository)
 
       return Result.new(version, source, nil) if text_present?(version)
-      return Result.new(nil, source, :request_failed) if @request_failed
+      error = @latest_error || (@request_failed ? :request_failed : nil)
+      return Result.new(nil, source, error) if error
 
       Result.new(nil, source, :version_unavailable)
     rescue StandardError
@@ -116,7 +118,7 @@ module RedminePluginCheck
     end
 
     def latest_release_tag(repository)
-      data = get_json(github_api_url(repository, '/releases/latest'))
+      data = get_json(github_api_url(repository, '/releases/latest'), :ignore_not_found => true)
       return nil unless data.is_a?(Hash)
 
       data['tag_name'] || data['name']
@@ -163,16 +165,16 @@ module RedminePluginCheck
       end
 
       unless response.is_a?(Net::HTTPSuccess)
-        @request_failed = true unless response.is_a?(Net::HTTPNotFound)
+        set_http_error(response)
         return nil
       end
 
       response.body
-    rescue StandardError
-      @request_failed = true
+    rescue StandardError => e
+      set_error(error_from_exception(e))
       nil
     end
-    def get_json(url)
+    def get_json(url, options = {})
       uri = URI.parse(url)
       response = nil
 
@@ -186,14 +188,40 @@ module RedminePluginCheck
       end
 
       unless response.is_a?(Net::HTTPSuccess)
-        @request_failed = true unless response.is_a?(Net::HTTPNotFound)
+        set_http_error(response) unless response.is_a?(Net::HTTPNotFound) && options[:ignore_not_found]
         return nil
       end
 
       JSON.parse(response.body)
-    rescue StandardError
-      @request_failed = true
+    rescue StandardError => e
+      set_error(error_from_exception(e))
       nil
+    end
+
+    def set_http_error(response)
+      case response
+      when Net::HTTPUnauthorized
+        set_error(:authentication_required)
+      when Net::HTTPForbidden
+        remaining = response['x-ratelimit-remaining'].to_s
+        set_error(remaining == '0' ? :rate_limited : :authentication_required)
+      when Net::HTTPNotFound
+        set_error(:repository_not_found)
+      else
+        set_error(:request_failed)
+      end
+    end
+
+    def set_error(error)
+      @request_failed = true
+      @latest_error ||= error
+    end
+
+    def error_from_exception(error)
+      return :request_timeout if defined?(Timeout::Error) && error.is_a?(Timeout::Error)
+      return :ssl_error if defined?(OpenSSL::SSL::SSLError) && error.is_a?(OpenSSL::SSL::SSLError)
+
+      :request_failed
     end
 
     def github_api_url(repository, path)

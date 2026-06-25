@@ -24,6 +24,7 @@ module RedminePluginCheck
       :redmine_condition_in_init,
       :has_migrations,
       :has_gemfile,
+      :primary_reasons,
       :compatibility_findings,
       :status,
       :notes
@@ -74,6 +75,26 @@ module RedminePluginCheck
       compatibility_findings = CompatibilityScanner.new(directory).call
       last_modified_at = plugin_last_modified_at(directory)
       latest_version = latest_version_for(plugin, directory)
+      status = status_for(
+        requires_redmine,
+        requires_result,
+        lower_bound_only,
+        target_major_jump,
+        has_init_condition,
+        has_migrations,
+        has_gemfile,
+        compatibility_findings
+      )
+      primary_reasons = build_primary_reasons(
+        requires_redmine,
+        requires_result,
+        lower_bound_only,
+        has_init_condition,
+        has_migrations,
+        has_gemfile,
+        compatibility_findings,
+        status
+      )
       notes = build_notes(
         requires_redmine,
         requires_result,
@@ -101,17 +122,9 @@ module RedminePluginCheck
         has_init_condition,
         has_migrations,
         has_gemfile,
+        primary_reasons,
         compatibility_findings,
-        status_for(
-          requires_redmine,
-          requires_result,
-          lower_bound_only,
-          target_major_jump,
-          has_init_condition,
-          has_migrations,
-          has_gemfile,
-          compatibility_findings
-        ),
+        status,
         notes
       )
     end
@@ -222,6 +235,23 @@ module RedminePluginCheck
       notes
     end
 
+    def build_primary_reasons(requires_redmine, requires_result, lower_bound_only, has_init_condition, has_migrations, has_gemfile, compatibility_findings, status)
+      return [] if status == 'OK'
+
+      reasons = []
+      reasons << :target_version_outside_requires_redmine if requires_result == false
+      reasons << :alias_method_chain_breaking if finding_key?(compatibility_findings, :alias_method_chain)
+      reasons << :dispatcher_to_prepare_breaking if finding_key?(compatibility_findings, :dispatcher_to_prepare)
+      reasons << :require_dispatcher_breaking if finding_key?(compatibility_findings, :require_dispatcher)
+      reasons << :legacy_compatibility_patterns_detected if compatibility_findings.any? && reasons.empty?
+      reasons << :requires_redmine_missing if status == 'Unknown' && requires_redmine.blank?
+      reasons << :init_contains_redmine_version_condition if has_init_condition && reasons.empty?
+      reasons << :has_database_migrations if has_migrations && reasons.empty?
+      reasons << :has_plugin_gemfile if has_gemfile && reasons.empty?
+      reasons << :requires_redmine_lower_bound_only if lower_bound_only && reasons.empty?
+      reasons << :target_version_missing if target_version.blank? && reasons.empty?
+      reasons.uniq
+    end
     def plugin_last_modified_at(directory)
       return nil unless Dir.exist?(directory)
 

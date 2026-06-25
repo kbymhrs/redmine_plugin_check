@@ -70,6 +70,7 @@ module RedminePluginCheckHelper
   def plugin_check_column_help_items
     [
       [:field_status, :status],
+      [:label_primary_reasons, :primary_reasons],
       [:field_name, :name],
       [:field_identifier, :identifier],
       [:field_version, :version],
@@ -91,13 +92,24 @@ module RedminePluginCheckHelper
     I18n.t("redmine_plugin_check.column_help.#{help_key}", :default => '')
   end
 
+  def plugin_check_reasons_label(reasons)
+    return '-' if reasons.blank?
+
+    content_tag(:ul, :class => 'plugin-check-primary-reasons') do
+      reasons.map do |reason|
+        content_tag(:li, plugin_check_note_label(reason), :class => plugin_check_note_class(reason))
+      end.join.html_safe
+    end
+  end
+
   def plugin_check_note_label(note)
     I18n.t("redmine_plugin_check.notes.#{note}", :default => note.to_s)
   end
 
   def plugin_check_finding_label(finding)
     label = I18n.t("redmine_plugin_check.findings.#{finding.key}", :default => finding.key.to_s)
-    "#{label} (#{finding.path})"
+    location = finding.line.present? ? "#{finding.path}:#{finding.line}" : finding.path
+    "#{label} (#{location})"
   end
 
   def plugin_check_note_class(note)

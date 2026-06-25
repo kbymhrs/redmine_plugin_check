@@ -18,8 +18,10 @@ class RedminePluginCheckAnalyzerTest < ActiveSupport::TestCase
       plugin = FakePlugin.new(:legacy_plugin, 'Legacy Plugin', '1.0.0', 'ACME', plugin_dir, { :version => '5.0.0' })
 
       report = RedminePluginCheck::Analyzer.new(:target_version => '6.0.0', :plugins => [plugin]).call
+      plugin_report = report.plugins.first
 
-      assert_equal 'Risky', report.plugins.first.status
+      assert_equal 'Risky', plugin_report.status
+      assert_includes plugin_report.primary_reasons, :target_version_outside_requires_redmine
     end
   end
 
@@ -34,6 +36,7 @@ class RedminePluginCheckAnalyzerTest < ActiveSupport::TestCase
 
       assert_equal 'Warning', report.plugins.first.status
       assert report.plugins.first.has_migrations
+      assert_includes report.plugins.first.primary_reasons, :has_database_migrations
     end
   end
 
@@ -52,6 +55,7 @@ class RedminePluginCheckAnalyzerTest < ActiveSupport::TestCase
       assert plugin_report.target_major_jump
       assert plugin_report.last_modified_at
       assert_includes plugin_report.notes, :requires_redmine_lower_bound_only
+      assert_empty plugin_report.primary_reasons
     end
   end
 
@@ -68,9 +72,12 @@ class RedminePluginCheckAnalyzerTest < ActiveSupport::TestCase
 
       assert_equal 'Risky', plugin_report.status
       assert_equal :alias_method_chain, plugin_report.compatibility_findings.first.key
+      assert_equal 2, plugin_report.compatibility_findings.first.line
+      assert_includes plugin_report.primary_reasons, :alias_method_chain_breaking
       assert_includes plugin_report.notes, :legacy_breaking_patterns_detected
     end
   end
+
   test 'does not treat explanatory alias method chain text as a risky call' do
     Dir.mktmpdir do |dir|
       plugin_dir = File.join(dir, 'self_documenting_plugin')
@@ -86,6 +93,7 @@ class RedminePluginCheckAnalyzerTest < ActiveSupport::TestCase
       assert plugin_report.compatibility_findings.empty?
     end
   end
+
   test 'ignores legacy api names in ruby comments' do
     Dir.mktmpdir do |dir|
       plugin_dir = File.join(dir, 'commented_plugin')
@@ -99,6 +107,21 @@ class RedminePluginCheckAnalyzerTest < ActiveSupport::TestCase
 
       assert_equal 'OK', plugin_report.status
       assert plugin_report.compatibility_findings.empty?
+    end
+  end
+
+  test 'adds missing requires_redmine to primary reasons for unknown plugins' do
+    Dir.mktmpdir do |dir|
+      plugin_dir = File.join(dir, 'unknown_plugin')
+      Dir.mkdir(plugin_dir)
+      File.write(File.join(plugin_dir, 'init.rb'), "Redmine::Plugin.register :unknown_plugin do\nend\n")
+      plugin = FakePlugin.new(:unknown_plugin, 'Unknown Plugin', '1.0.0', 'ACME', plugin_dir, nil)
+
+      report = RedminePluginCheck::Analyzer.new(:target_version => '6.0.0', :plugins => [plugin]).call
+      plugin_report = report.plugins.first
+
+      assert_equal 'Unknown', plugin_report.status
+      assert_includes plugin_report.primary_reasons, :requires_redmine_missing
     end
   end
 end

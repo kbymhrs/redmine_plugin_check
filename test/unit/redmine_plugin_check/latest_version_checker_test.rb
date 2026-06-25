@@ -37,16 +37,17 @@ class RedminePluginCheckLatestVersionCheckerTest < ActiveSupport::TestCase
       assert_equal ['redmine', 'redmine'], checker.send(:github_repository)
     end
   end
+
   test 'returns request failed when github api cannot be reached' do
     Dir.mktmpdir do |dir|
       plugin = FakePlugin.new('https://github.com/redmine/redmine')
       checker = RedminePluginCheck::LatestVersionChecker.new(plugin, dir)
-      checker.define_singleton_method(:get_json) do |_url|
-        @request_failed = true
+      checker.define_singleton_method(:get_json) do |_url, *_args|
+        set_error(:request_failed)
         nil
       end
       checker.define_singleton_method(:get_text) do |_url|
-        @request_failed = true
+        set_error(:request_failed)
         nil
       end
 
@@ -62,7 +63,7 @@ class RedminePluginCheckLatestVersionCheckerTest < ActiveSupport::TestCase
     Dir.mktmpdir do |dir|
       plugin = FakePlugin.new('https://github.com/redmine/redmine')
       checker = RedminePluginCheck::LatestVersionChecker.new(plugin, dir)
-      checker.define_singleton_method(:get_json) { |_url| nil }
+      checker.define_singleton_method(:get_json) { |_url, *_args| nil }
       checker.define_singleton_method(:get_text) do |_url|
         '<a href="/redmine/redmine/releases/tag/v6.1.2">v6.1.2</a>'
       end
@@ -72,6 +73,27 @@ class RedminePluginCheckLatestVersionCheckerTest < ActiveSupport::TestCase
       assert_equal 'v6.1.2', result.version
       assert_equal 'https://github.com/redmine/redmine', result.source
       assert_nil result.error
+    end
+  end
+
+  test 'classifies github authentication failures' do
+    Dir.mktmpdir do |dir|
+      plugin = FakePlugin.new('https://github.com/private/repo')
+      checker = RedminePluginCheck::LatestVersionChecker.new(plugin, dir)
+      checker.define_singleton_method(:get_json) do |_url, *_args|
+        set_error(:authentication_required)
+        nil
+      end
+      checker.define_singleton_method(:get_text) do |_url|
+        set_error(:authentication_required)
+        nil
+      end
+
+      result = checker.call
+
+      assert_nil result.version
+      assert_equal 'https://github.com/private/repo', result.source
+      assert_equal :authentication_required, result.error
     end
   end
 end

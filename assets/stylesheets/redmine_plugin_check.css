@@ -201,3 +201,40 @@
 .plugin-check-plugins td:first-child {
   vertical-align: top;
 }
+
+.plugin-check-primary-reasons {
+  margin: 0;
+  padding-left: 18px;
+  text-align: left;
+  white-space: normal;
+}
+
+.plugin-check-plugins-summary {
+  min-width: 1420px;
+}
+
+.plugin-check-plugins-detail {
+  min-width: 1960px;
+}
+
+.plugin-check-plugins .plugin-check-primary-reasons-col {
+  width: 250px;
+}
+
+.plugin-check-plugins th.plugin-check-primary-reasons-column,
+.plugin-check-plugins td.plugin-check-primary-reasons-column {
+  min-width: 250px;
+  text-align: left !important;
+  vertical-align: top;
+  white-space: normal;
+}
+
+.plugin-check-plugins-summary .plugin-check-notes-col {
+  width: 360px;
+}
+
+.plugin-check-plugins-summary th.plugin-check-notes-column,
+.plugin-check-plugins-summary td.plugin-check-notes-column {
+  min-width: 360px !important;
+  width: 360px !important;
+}

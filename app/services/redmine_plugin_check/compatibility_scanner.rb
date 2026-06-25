@@ -1,6 +1,6 @@
 module RedminePluginCheck
   class CompatibilityScanner
-    Finding = Struct.new(:key, :severity, :path)
+    Finding = Struct.new(:key, :severity, :path, :line)
 
     MAX_FILE_SIZE = 512 * 1024
     SKIPPED_DIRECTORIES = %w[.git log tmp vendor node_modules test spec].freeze
@@ -30,9 +30,11 @@ module RedminePluginCheck
         content = scanner_content(path)
         next if content.nil?
 
-        PATTERNS.each do |key, severity, pattern|
-          if content =~ pattern
-            findings << Finding.new(key, severity, relative_path(path))
+        content.lines.each_with_index do |line, index|
+          PATTERNS.each do |key, severity, pattern|
+            if line =~ pattern
+              findings << Finding.new(key, severity, relative_path(path), index + 1)
+            end
           end
         end
       end
@@ -84,11 +86,12 @@ module RedminePluginCheck
       basename = File.basename(path)
 
       if %w[.rb .rake .gemspec .ru].include?(extension) || %w[Gemfile Rakefile config.ru].include?(basename)
-        return content.lines.reject { |line| line =~ /^\s*#/ }.join
+        return content.lines.map { |line| line =~ /^\s*#/ ? "\n" : line }.join
       end
 
       if extension == '.erb'
-        return content.gsub(/<%#.*?%>/m, '').gsub(/<!--.*?-->/m, '')
+        return content.gsub(/<%#.*?%>/m) { |match| "\n" * match.count("\n") }
+                      .gsub(/<!--.*?-->/m) { |match| "\n" * match.count("\n") }
       end
 
       content
@@ -106,9 +109,10 @@ module RedminePluginCheck
     def unique_findings(findings)
       seen = {}
       findings.each_with_object([]) do |finding, unique|
-        next if seen[finding.key]
+        key = [finding.key, finding.path, finding.line]
+        next if seen[key]
 
-        seen[finding.key] = true
+        seen[key] = true
         unique << finding
       end
     end

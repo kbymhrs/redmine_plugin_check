@@ -10,12 +10,13 @@ class RedminePluginCheckController < ApplicationController
     @target_version = params[:target_version].to_s.strip
     @check_latest = params[:check_latest].to_s == '1'
     @status_filter = normalize_status_filter(params[:status_filter])
+    @show_details = params[:show_details].to_s == '1'
     @report = RedminePluginCheck::Analyzer.new(
       :target_version => @target_version,
       :check_latest => @check_latest
     ).call
 
-    @plugins = filtered_plugins(@report.plugins)
+    @plugins = filtered_plugins(sorted_plugins(@report.plugins))
 
     respond_to do |format|
       format.html
@@ -45,14 +46,21 @@ class RedminePluginCheckController < ApplicationController
       plugins
     end
   end
+
+  def sorted_plugins(plugins)
+    priority = { 'Risky' => 0, 'Warning' => 1, 'Unknown' => 2, 'OK' => 3 }
+    plugins.sort_by { |plugin| [priority.fetch(plugin.status.to_s, 9), plugin.name.to_s.downcase, plugin.id.to_s] }
+  end
+
   def csv_export(plugins)
     require 'csv'
 
     CSV.generate(:headers => true) do |csv|
       csv << [
         'status',
-        'plugin_id',
+        'primary_reasons',
         'name',
+        'plugin_id',
         'version',
         'latest_version',
         'latest_version_source',
@@ -67,14 +75,17 @@ class RedminePluginCheckController < ApplicationController
         'has_migrations',
         'has_gemfile',
         'compatibility_findings',
-        'notes'
+        'notes',
+        'review_result',
+        'action_plan'
       ]
 
       plugins.each do |plugin|
         csv << [
           plugin.status,
-          plugin.id,
+          localized_notes(plugin.primary_reasons).join(' | '),
           plugin.name,
+          plugin.id,
           plugin.version,
           plugin.latest_version,
           plugin.latest_version_source,
@@ -89,7 +100,9 @@ class RedminePluginCheckController < ApplicationController
           plugin.has_migrations,
           plugin.has_gemfile,
           localized_findings(plugin.compatibility_findings).join(' | '),
-          localized_notes(plugin.notes).join(' | ')
+          localized_notes(plugin.notes).join(' | '),
+          '',
+          ''
         ]
       end
     end
@@ -104,7 +117,8 @@ class RedminePluginCheckController < ApplicationController
   def localized_findings(findings)
     findings.map do |finding|
       label = I18n.t("redmine_plugin_check.findings.#{finding.key}", :default => finding.key.to_s)
-      "#{label} (#{finding.path})"
+      location = finding.line.present? ? "#{finding.path}:#{finding.line}" : finding.path
+      "#{label} (#{location})"
     end
   end
 

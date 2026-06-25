@@ -7,7 +7,7 @@ en:
   label_target_redmine_version: "Target Redmine version"
   label_check_latest_version: "Fetch latest versions"
   label_latest_version: "Latest version"
-  label_primary_reasons: "Main reasons"
+  label_primary_reasons: "Risky/Unknown reasons"
   label_last_modified_at: "Last modified"
   label_requires_redmine: "requires_redmine"
   label_requires_redmine_lower_bound_only: "Lower bound only"
@@ -29,7 +29,7 @@ en:
   redmine_plugin_check:
     column_help:
       status: "Overall result from the target version and detected signals: OK, Warning, Unknown, or Risky."
-      primary_reasons: "Short list of the most important reasons to review first. Risky causes and Unknown causes are surfaced here. '-' means there is no main extra reason."
+      primary_reasons: "Short list of the main reasons for Risky or Unknown results. Warning rows show this only when there is a high-priority review reason. '-' means there is no main Risky/Unknown reason."
       identifier: "The plugin id registered with Redmine::Plugin.register."
       name: "The plugin display name. '-' means the name is missing or could not be read."
       version: "The plugin version. '-' means the version is missing or could not be read."

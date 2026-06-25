@@ -7,7 +7,7 @@ ja:
   label_target_redmine_version: "移行先 Redmine バージョン"
   label_check_latest_version: "最新バージョン情報も取得する"
   label_latest_version: "最新バージョン"
-  label_primary_reasons: "主な理由"
+  label_primary_reasons: "Risky/Unknown の理由"
   label_last_modified_at: "最終更新日"
   label_requires_redmine: "requires_redmine"
   label_requires_redmine_lower_bound_only: "下限のみ"
@@ -29,7 +29,7 @@ ja:
   redmine_plugin_check:
     column_help:
       status: "入力した移行先バージョンと検出結果から、OK / Warning / Unknown / Risky の総合判定を表示します。"
-      primary_reasons: "判定で特に確認したい理由を短く表示します。Risky の理由や Unknown の原因を一覧で先に確認するための列です。「-」は主な追加理由がないことを示します。"
+      primary_reasons: "Risky または Unknown になった主な理由を短く表示します。Warning の場合は優先確認したい理由があるときだけ表示します。「-」は Risky/Unknown の主な理由がないことを示します。"
       identifier: "Redmine::Plugin.register で登録された plugin id です。"
       name: "plugin の表示名です。「-」は name が未設定または取得できないことを示します。"
       version: "plugin の version です。「-」は version が未設定または取得できないことを示します。"

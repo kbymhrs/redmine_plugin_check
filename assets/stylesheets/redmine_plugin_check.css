@@ -183,11 +183,11 @@
 }
 
 .plugin-check-plugins .plugin-check-name-col {
-  width: 150px;
+  width: 240px;
 }
 
 .plugin-check-plugins .plugin-check-id-col {
-  width: 260px;
+  width: auto;
 }
 
 .plugin-check-plugins th.plugin-check-name-column,
@@ -218,12 +218,12 @@
 }
 
 .plugin-check-plugins .plugin-check-primary-reasons-col {
-  width: 250px;
+  width: auto;
 }
 
 .plugin-check-plugins th.plugin-check-primary-reasons-column,
 .plugin-check-plugins td.plugin-check-primary-reasons-column {
-  min-width: 250px;
+  min-width: 120px;
   text-align: left !important;
   vertical-align: top;
   white-space: normal;
@@ -237,4 +237,19 @@
 .plugin-check-plugins-summary td.plugin-check-notes-column {
   min-width: 360px !important;
   width: 360px !important;
+}
+
+.plugin-check-plugins th.plugin-check-name-column,
+.plugin-check-plugins td.plugin-check-name-column {
+  min-width: 220px;
+}
+
+.plugin-check-plugins td.plugin-check-name-column a {
+  white-space: normal;
+}
+
+.plugin-check-plugins th.plugin-check-id-column,
+.plugin-check-plugins td.plugin-check-id-column {
+  min-width: 140px;
+  white-space: nowrap;
 }

@@ -7,7 +7,7 @@ ja:
   label_target_redmine_version: "移行先 Redmine バージョン"
   label_check_latest_version: "最新バージョン情報も取得する"
   label_latest_version: "最新バージョン"
-  label_primary_reasons: "Risky/Unknown の理由"
+  label_primary_reasons: "ステータスの主な理由"
   label_last_modified_at: "最終更新日"
   label_requires_redmine: "requires_redmine"
   label_requires_redmine_lower_bound_only: "下限のみ"
@@ -29,11 +29,11 @@ ja:
   redmine_plugin_check:
     column_help:
       status: "入力した移行先バージョンと検出結果から、OK / Warning / Unknown / Risky の総合判定を表示します。"
-      primary_reasons: "Risky または Unknown になった主な理由を短く表示します。Warning の場合は優先確認したい理由があるときだけ表示します。「-」は Risky/Unknown の主な理由がないことを示します。"
+      primary_reasons: "OK / Warning / Unknown / Risky になった主な理由を短く表示します。「-」はステータス判定上、特に前面に出す理由がないことを示します。"
       identifier: "Redmine::Plugin.register で登録された plugin id です。"
       name: "plugin の表示名です。「-」は name が未設定または取得できないことを示します。"
       version: "plugin の version です。「-」は version が未設定または取得できないことを示します。"
-      latest_version: "チェック時に plugin.url または .git/config から GitHub repository を探し、GitHub API と GitHub の tags ページから最新 Release または Tag を取得します。「-」は最新バージョン情報の取得チェックを実行していない状態です。private repository、認証が必要な repository、GitHub API rate limit、SSL、timeout、repository が見つからない場合などは取得できないことがあります。"
+      latest_version: "チェック時に plugin.url または .git/config から GitHub repository を探し、GitHub API と GitHub の tags ページから最新 Release または Tag を取得します。「-」は最新バージョン情報の取得チェックを実行していない状態です。rate limit は GitHub API の未認証アクセス制限に達した状態で、時間を置くと解消する場合があります。private repository、認証が必要な repository、SSL、timeout、repository が見つからない場合なども取得できないことがあります。"
       author: "plugin の author です。「-」は author が未設定または取得できないことを示します。"
       last_modified_at: "plugin directory 内のファイル更新日時のうち、.git / log / tmp / vendor などを除いた最新日時です。「-」は対象ファイルがない、または更新日時を取得できないことを示します。"
       requires_redmine: "plugin の requires_redmine 指定です。移行先バージョンを入力している場合、条件を満たすかも括弧で表示します。「-」は requires_redmine が未指定または取得できないことを示します。"

@@ -7,7 +7,7 @@ en:
   label_target_redmine_version: "Target Redmine version"
   label_check_latest_version: "Fetch latest versions"
   label_latest_version: "Latest version"
-  label_primary_reasons: "Risky/Unknown reasons"
+  label_primary_reasons: "Main status reasons"
   label_last_modified_at: "Last modified"
   label_requires_redmine: "requires_redmine"
   label_requires_redmine_lower_bound_only: "Lower bound only"
@@ -29,11 +29,11 @@ en:
   redmine_plugin_check:
     column_help:
       status: "Overall result from the target version and detected signals: OK, Warning, Unknown, or Risky."
-      primary_reasons: "Short list of the main reasons for Risky or Unknown results. Warning rows show this only when there is a high-priority review reason. '-' means there is no main Risky/Unknown reason."
+      primary_reasons: "Short list of the main reasons behind the OK, Warning, Unknown, or Risky status. '-' means there is no status reason important enough to surface here."
       identifier: "The plugin id registered with Redmine::Plugin.register."
       name: "The plugin display name. '-' means the name is missing or could not be read."
       version: "The plugin version. '-' means the version is missing or could not be read."
-      latest_version: "When enabled, tries to detect a GitHub repository from plugin.url or .git/config, then fetches the latest Release or Tag via the GitHub API and GitHub tags page. '-' means the latest-version check has not been run. Private repositories, authentication, GitHub API rate limits, SSL errors, timeouts, or missing repositories may prevent fetching."
+      latest_version: "When enabled, tries to detect a GitHub repository from plugin.url or .git/config, then fetches the latest Release or Tag via the GitHub API and GitHub tags page. '-' means the latest-version check has not been run. Rate limited means the unauthenticated GitHub API limit was reached and may clear after waiting. Private repositories, authentication, SSL errors, timeouts, or missing repositories may also prevent fetching."
       author: "The plugin author. '-' means the author is missing or could not be read."
       last_modified_at: "Latest file modification time inside the plugin directory, excluding paths such as .git, log, tmp, and vendor. '-' means no target file was found or the timestamp could not be read."
       requires_redmine: "The plugin's requires_redmine declaration. When a target version is entered, the table also shows whether that target satisfies the declaration. '-' means requires_redmine is missing or could not be read."

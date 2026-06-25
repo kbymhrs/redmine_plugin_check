@@ -58,7 +58,6 @@ class RedminePluginCheckController < ApplicationController
     CSV.generate(:headers => true) do |csv|
       csv << [
         'status',
-        'primary_reasons',
         'name',
         'plugin_id',
         'version',
@@ -75,6 +74,7 @@ class RedminePluginCheckController < ApplicationController
         'has_migrations',
         'has_gemfile',
         'compatibility_findings',
+        'primary_reasons',
         'notes',
         'review_result',
         'action_plan'
@@ -83,7 +83,6 @@ class RedminePluginCheckController < ApplicationController
       plugins.each do |plugin|
         csv << [
           plugin.status,
-          localized_notes(plugin.primary_reasons).join(' | '),
           plugin.name,
           plugin.id,
           plugin.version,
@@ -100,6 +99,7 @@ class RedminePluginCheckController < ApplicationController
           plugin.has_migrations,
           plugin.has_gemfile,
           localized_findings(plugin.compatibility_findings).join(' | '),
+          localized_notes(plugin.primary_reasons).join(' | '),
           localized_notes(plugin.notes).join(' | '),
           '',
           ''

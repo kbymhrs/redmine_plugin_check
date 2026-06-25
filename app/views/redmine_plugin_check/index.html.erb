@@ -56,7 +56,6 @@
   <table class="list plugin-check-plugins<%= @show_details ? ' plugin-check-plugins-detail' : ' plugin-check-plugins-summary' %>">
     <colgroup>
       <col class="plugin-check-status-col" />
-      <col class="plugin-check-primary-reasons-col" />
       <col class="plugin-check-name-col" />
       <col class="plugin-check-id-col" />
       <col class="plugin-check-version-col" />
@@ -72,12 +71,12 @@
         <col class="plugin-check-flag-col" />
         <col class="plugin-check-findings-col" />
       <% end %>
+      <col class="plugin-check-primary-reasons-col" />
       <col class="plugin-check-notes-col" />
     </colgroup>
     <thead>
       <tr>
         <th><%= plugin_check_column_header(:field_status, :status) %></th>
-        <th class="plugin-check-primary-reasons-column"><%= plugin_check_column_header(:label_primary_reasons, :primary_reasons) %></th>
         <th class="plugin-check-name-column"><%= plugin_check_column_header(:field_name, :name) %></th>
         <th class="plugin-check-id-column"><%= plugin_check_column_header(:field_identifier, :identifier) %></th>
         <th><%= plugin_check_column_header(:field_version, :version) %></th>
@@ -93,6 +92,7 @@
           <th><%= plugin_check_column_header(:label_has_gemfile, :has_gemfile) %></th>
           <th class="plugin-check-findings-column"><%= plugin_check_column_header(:label_compatibility_findings, :compatibility_findings) %></th>
         <% end %>
+        <th class="plugin-check-primary-reasons-column"><%= plugin_check_column_header(:label_primary_reasons, :primary_reasons) %></th>
         <th class="plugin-check-notes-column"><%= plugin_check_column_header(:label_notes, :notes) %></th>
       </tr>
     </thead>
@@ -100,7 +100,6 @@
       <% @plugins.each do |plugin| %>
         <tr>
           <td><%= plugin_check_status_label(plugin.status) %></td>
-          <td class="plugin-check-primary-reasons-column"><%= plugin_check_reasons_label(plugin.primary_reasons) %></td>
           <td class="plugin-check-name-column"><%= plugin_check_name_label(plugin) %></td>
           <td class="plugin-check-id-column"><code><%= plugin.id %></code></td>
           <td><%= plugin.version.presence || '-' %></td>
@@ -126,6 +125,7 @@
               <% end %>
             </td>
           <% end %>
+          <td class="plugin-check-primary-reasons-column"><%= plugin_check_reasons_label(plugin.primary_reasons) %></td>
           <td class="plugin-check-notes-column">
             <% if plugin.notes.any? %>
               <ul class="plugin-check-notes">

@@ -70,7 +70,6 @@ module RedminePluginCheckHelper
   def plugin_check_column_help_items
     [
       [:field_status, :status],
-      [:label_primary_reasons, :primary_reasons],
       [:field_name, :name],
       [:field_identifier, :identifier],
       [:field_version, :version],
@@ -84,6 +83,7 @@ module RedminePluginCheckHelper
       [:label_has_migrations, :has_migrations],
       [:label_has_gemfile, :has_gemfile],
       [:label_compatibility_findings, :compatibility_findings],
+      [:label_primary_reasons, :primary_reasons],
       [:label_notes, :notes]
     ]
   end

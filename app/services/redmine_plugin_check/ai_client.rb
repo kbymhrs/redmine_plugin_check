@@ -9,13 +9,15 @@ module RedminePluginCheck
     Result = Struct.new(:success, :content, :error, :status_code)
 
     USER_AGENT = 'RedminePluginCheck/0.1.1'.freeze
+    TEST_PROMPT = 'Reply with OK only.'.freeze
+    GEMINI_MODELS_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models'.freeze
 
     def initialize(settings)
       @settings = settings
     end
 
-    def call(markdown)
-      return Result.new(false, nil, :ai_disabled, nil) unless settings.enabled?
+    def call(markdown, options = {})
+      return Result.new(false, nil, :ai_disabled, nil) unless options[:ignore_enabled] || settings.enabled?
       return Result.new(false, nil, :endpoint_missing, nil) unless settings.endpoint_present?
       return Result.new(false, nil, :api_key_missing, nil) unless settings.api_key_present?
       return Result.new(false, nil, :model_missing, nil) unless present?(settings.model)
@@ -40,16 +42,78 @@ module RedminePluginCheck
       Result.new(false, nil, :request_failed, nil)
     end
 
+    def test_connection
+      call(TEST_PROMPT, :ignore_enabled => true)
+    end
+
+    def available_models
+      return Result.new(false, nil, :api_key_missing, nil) unless settings.api_key_present?
+
+      response = get_json(URI.parse(GEMINI_MODELS_ENDPOINT))
+      status_code = response.code.to_i
+      return Result.new(false, nil, :http_error, status_code) unless status_code >= 200 && status_code < 300
+
+      models = extract_gemini_models(response.body)
+      return Result.new(false, nil, :response_format_error, status_code) if models.empty?
+
+      Result.new(true, models, nil, status_code)
+    rescue JSON::ParserError
+      Result.new(false, nil, :json_parse_error, nil)
+    rescue Net::OpenTimeout, Net::ReadTimeout
+      Result.new(false, nil, :request_timeout, nil)
+    rescue OpenSSL::SSL::SSLError
+      Result.new(false, nil, :ssl_error, nil)
+    rescue StandardError
+      Result.new(false, nil, :request_failed, nil)
+    end
+
     private
 
     attr_reader :settings
 
     def request_payload(markdown)
+      prompt = limited_prompt(markdown)
+
+      case settings.provider_preset
+      when 'gemini'
+        gemini_payload(prompt)
+      when 'claude'
+        claude_payload(prompt)
+      else
+        chat_completions_payload(prompt)
+      end
+    end
+
+    def chat_completions_payload(prompt)
       JSON.generate(
         'model' => settings.model,
         'messages' => [
           { 'role' => 'system', 'content' => settings.system_prompt },
-          { 'role' => 'user', 'content' => limited_prompt(markdown) }
+          { 'role' => 'user', 'content' => prompt }
+        ]
+      )
+    end
+
+    def gemini_payload(prompt)
+      JSON.generate(
+        'contents' => [
+          {
+            'role' => 'user',
+            'parts' => [
+              { 'text' => settings.system_prompt + "\n\n" + prompt }
+            ]
+          }
+        ]
+      )
+    end
+
+    def claude_payload(prompt)
+      JSON.generate(
+        'model' => settings.model,
+        'max_tokens' => 1024,
+        'system' => settings.system_prompt,
+        'messages' => [
+          { 'role' => 'user', 'content' => prompt }
         ]
       )
     end
@@ -67,6 +131,18 @@ module RedminePluginCheck
 
     def extract_content(body)
       data = JSON.parse(body.to_s)
+
+      case settings.provider_preset
+      when 'gemini'
+        extract_gemini_content(data)
+      when 'claude'
+        extract_claude_content(data)
+      else
+        extract_chat_completions_content(data)
+      end
+    end
+
+    def extract_chat_completions_content(data)
       choices = data['choices']
       return nil unless choices.is_a?(Array) && choices.first.is_a?(Hash)
 
@@ -76,20 +152,84 @@ module RedminePluginCheck
       choices.first['text']
     end
 
+    def extract_gemini_content(data)
+      candidates = data['candidates']
+      return nil unless candidates.is_a?(Array) && candidates.first.is_a?(Hash)
+
+      content = candidates.first['content']
+      return nil unless content.is_a?(Hash)
+
+      parts = content['parts']
+      return nil unless parts.is_a?(Array)
+
+      parts.map { |part| part.is_a?(Hash) ? part['text'] : nil }.compact.join
+    end
+
+    def extract_claude_content(data)
+      content = data['content']
+      return nil unless content.is_a?(Array)
+
+      content.map { |part| part.is_a?(Hash) ? part['text'] : nil }.compact.join
+    end
+
     def post_json(uri, body)
       response = nil
       Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https',
                                       :open_timeout => settings.timeout_seconds,
                                       :read_timeout => settings.timeout_seconds) do |http|
         request = Net::HTTP::Post.new(uri.request_uri)
-        request['User-Agent'] = USER_AGENT
-        request['Content-Type'] = 'application/json'
-        request['Accept'] = 'application/json'
-        request['Authorization'] = "Bearer #{settings.api_key}"
+        apply_headers(request)
         request.body = body
         response = http.request(request)
       end
       response
+    end
+
+    def get_json(uri)
+      response = nil
+      Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https',
+                                      :open_timeout => settings.timeout_seconds,
+                                      :read_timeout => settings.timeout_seconds) do |http|
+        request = Net::HTTP::Get.new(uri.request_uri)
+        apply_headers(request)
+        response = http.request(request)
+      end
+      response
+    end
+
+    def extract_gemini_models(body)
+      data = JSON.parse(body.to_s)
+      models = data['models']
+      return [] unless models.is_a?(Array)
+
+      models.map do |model|
+        next unless model.is_a?(Hash)
+
+        name = model['name'].to_s.sub(%r{\Amodels/}, '')
+        methods = model['supportedGenerationMethods']
+        next if name.empty?
+        next if methods.is_a?(Array) && !methods.include?('generateContent')
+
+        name
+      end.compact.sort
+    end
+
+    def apply_headers(request)
+      request['User-Agent'] = USER_AGENT
+      request['Content-Type'] = 'application/json'
+      request['Accept'] = 'application/json'
+
+      case settings.provider_preset
+      when 'gemini'
+        request['x-goog-api-key'] = settings.api_key
+      when 'claude'
+        request['x-api-key'] = settings.api_key
+        request['anthropic-version'] = '2023-06-01'
+      when 'azure_openai'
+        request['api-key'] = settings.api_key
+      else
+        request['Authorization'] = "Bearer #{settings.api_key}"
+      end
     end
 
     def present?(value)
@@ -97,3 +237,4 @@ module RedminePluginCheck
     end
   end
 end
+

@@ -3,17 +3,66 @@ module RedminePluginCheck
     DEFAULT_SYSTEM_PROMPT_ENGLISH = 'You are an expert Redmine upgrade advisor. Analyze the plugin compatibility report and return concrete actions for the administrator.'.freeze
     DEFAULT_SYSTEM_PROMPT_JAPANESE = 'あなたは Redmine アップグレード支援の専門家です。プラグイン互換性レポートを分析し、管理者が実行すべき具体的な対応を日本語で返してください。'.freeze
 
+    PROVIDER_PRESETS = {
+      'custom' => {
+        'label' => 'Custom',
+        'provider_label' => 'Custom OpenAI compatible',
+        'endpoint' => 'https://api.example.com/v1/chat/completions',
+        'api_key_env' => 'REDMINE_PLUGIN_CHECK_AI_API_KEY',
+        'model' => 'model-name'
+      },
+      'openai' => {
+        'label' => 'OpenAI',
+        'provider_label' => 'OpenAI',
+        'endpoint' => 'https://api.openai.com/v1/chat/completions',
+        'api_key_env' => 'REDMINE_PLUGIN_CHECK_OPENAI_API_KEY',
+        'model' => 'gpt-4.1-mini'
+      },
+      'gemini' => {
+        'label' => 'Gemini',
+        'provider_label' => 'Gemini',
+        'endpoint' => 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+        'api_key_env' => 'REDMINE_PLUGIN_CHECK_GEMINI_API_KEY',
+        'model' => 'gemini-1.5-flash'
+      },
+      'claude' => {
+        'label' => 'Claude',
+        'provider_label' => 'Claude',
+        'endpoint' => 'https://api.anthropic.com/v1/messages',
+        'api_key_env' => 'REDMINE_PLUGIN_CHECK_CLAUDE_API_KEY',
+        'model' => 'claude-3-5-haiku-latest'
+      },
+      'azure_openai' => {
+        'label' => 'Azure OpenAI',
+        'provider_label' => 'Azure OpenAI',
+        'endpoint' => 'https://YOUR_RESOURCE.openai.azure.com/openai/deployments/YOUR_DEPLOYMENT/chat/completions?api-version=2024-02-15-preview',
+        'api_key_env' => 'REDMINE_PLUGIN_CHECK_AZURE_OPENAI_API_KEY',
+        'model' => 'YOUR_DEPLOYMENT'
+      }
+    }.freeze
+
     DEFAULTS = {
       'ai_enabled' => '0',
-      'ai_provider_label' => 'OpenAI compatible',
-      'ai_endpoint' => 'https://api.openai.com/v1/chat/completions',
+      'ai_provider_preset' => 'openai',
+      'ai_provider_label' => PROVIDER_PRESETS['openai']['provider_label'],
+      'ai_endpoint' => PROVIDER_PRESETS['openai']['endpoint'],
       'ai_api_key' => '',
       'ai_api_key_env' => 'REDMINE_PLUGIN_CHECK_AI_API_KEY',
-      'ai_model' => 'gpt-4.1-mini',
+      'ai_model' => PROVIDER_PRESETS['openai']['model'],
       'ai_timeout_seconds' => '60',
       'ai_max_prompt_characters' => '30000',
       'ai_system_prompt' => ''
     }.freeze
+
+    def self.provider_preset_options
+      %w[openai gemini claude azure_openai custom].map do |key|
+        [PROVIDER_PRESETS[key]['label'], key]
+      end
+    end
+
+    def self.provider_preset(key)
+      PROVIDER_PRESETS[key.to_s] || PROVIDER_PRESETS['custom']
+    end
 
     def initialize(settings = nil, env = ENV, locale = nil)
       @settings = DEFAULTS.merge(normalize_settings(settings || plugin_settings))
@@ -23,6 +72,11 @@ module RedminePluginCheck
 
     def enabled?
       value('ai_enabled') == '1'
+    end
+
+    def provider_preset
+      preset = value('ai_provider_preset')
+      PROVIDER_PRESETS.key?(preset) ? preset : 'custom'
     end
 
     def provider_label
@@ -131,3 +185,4 @@ module RedminePluginCheck
     end
   end
 end
+

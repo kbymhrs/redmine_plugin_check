@@ -71,4 +71,17 @@ class RedminePluginCheckAiSettingsTest < ActiveSupport::TestCase
 
     assert_equal 'Custom prompt', settings.system_prompt
   end
+
+  test 'returns known provider preset' do
+    settings = RedminePluginCheck::AiSettings.new({ 'ai_provider_preset' => 'gemini' }, {})
+
+    assert_equal 'gemini', settings.provider_preset
+  end
+
+  test 'falls back to custom provider preset' do
+    settings = RedminePluginCheck::AiSettings.new({ 'ai_provider_preset' => 'missing' }, {})
+
+    assert_equal 'custom', settings.provider_preset
+  end
 end
+

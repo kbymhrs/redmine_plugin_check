@@ -65,12 +65,67 @@ class RedminePluginCheckAiClientTest < ActiveSupport::TestCase
     assert !result.success
     assert_equal :response_format_error, result.error
   end
+  test 'posts gemini payload and returns candidate text' do
+    payloads = []
+    client = RedminePluginCheck::AiClient.new(ai_settings('ai_provider_preset' => 'gemini'))
+    client.define_singleton_method(:post_json) do |_uri, body|
+      payloads << JSON.parse(body)
+      FakeResponse.new('200', JSON.generate('candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'Gemini plan' }] } }]))
+    end
 
+    result = client.call('plugin report')
+
+    assert result.success
+    assert_equal 'Gemini plan', result.content
+    assert_equal 'user', payloads.first['contents'].first['role']
+  end
+
+  test 'posts claude payload and returns content text' do
+    payloads = []
+    client = RedminePluginCheck::AiClient.new(ai_settings('ai_provider_preset' => 'claude'))
+    client.define_singleton_method(:post_json) do |_uri, body|
+      payloads << JSON.parse(body)
+      FakeResponse.new('200', JSON.generate('content' => [{ 'type' => 'text', 'text' => 'Claude plan' }]))
+    end
+
+    result = client.call('plugin report')
+
+    assert result.success
+    assert_equal 'Claude plan', result.content
+    assert_equal 'gpt-test', payloads.first['model']
+    assert_equal 'System prompt', payloads.first['system']
+  end
+
+  test 'test connection ignores disabled setting' do
+    client = RedminePluginCheck::AiClient.new(ai_settings('ai_enabled' => '0'))
+    client.define_singleton_method(:post_json) do |_uri, _body|
+      FakeResponse.new('200', JSON.generate('choices' => [{ 'message' => { 'content' => 'OK' } }]))
+    end
+
+    result = client.test_connection
+
+    assert result.success
+  end
+  test 'fetches gemini models that support generate content' do
+    client = RedminePluginCheck::AiClient.new(ai_settings('ai_provider_preset' => 'gemini'))
+    client.define_singleton_method(:get_json) do |_uri|
+      FakeResponse.new('200', JSON.generate('models' => [
+        { 'name' => 'models/gemini-1.5-flash', 'supportedGenerationMethods' => ['generateContent'] },
+        { 'name' => 'models/embedding-001', 'supportedGenerationMethods' => ['embedContent'] }
+      ]))
+    end
+
+    result = client.available_models
+
+    assert result.success
+    assert_equal ['gemini-1.5-flash'], result.content
+  end
   private
 
   def ai_settings(overrides = {})
     settings = {
       'ai_enabled' => '1',
+      'ai_provider_preset' => 'openai',
       'ai_endpoint' => 'https://example.test/v1/chat/completions',
       'ai_api_key' => 'test-key',
       'ai_api_key_env' => '',
@@ -83,3 +138,5 @@ class RedminePluginCheckAiClientTest < ActiveSupport::TestCase
     RedminePluginCheck::AiSettings.new(settings, {})
   end
 end
+
+

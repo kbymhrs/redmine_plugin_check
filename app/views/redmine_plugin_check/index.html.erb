@@ -60,7 +60,9 @@
 
 <div class="plugin-check-ai-panel">
   <h3><%= l(:label_ai_analysis) %></h3>
-  <% if plugin_check_ai_analysis_available?(@ai_settings) %>
+  <% if @target_version.blank? %>
+    <p class="plugin-check-ai-unavailable"><%= l(:text_ai_analysis_target_version_required) %></p>
+  <% elsif plugin_check_ai_analysis_available?(@ai_settings) %>
     <%= form_tag plugin_check_ai_analysis_path, :method => :post, :class => 'plugin-check-ai-form' do %>
       <%= hidden_field_tag :target_version, @target_version %>
       <%= hidden_field_tag :status_filter, @status_filter %>
@@ -77,11 +79,17 @@
     </p>
   <% end %>
 
+  <% if @ai_analysis_target_version_missing %>
+    <p class="plugin-check-ai-error"><%= l(:text_ai_analysis_target_version_required) %></p>
+  <% end %>
+
   <% if @ai_analysis_result %>
     <% if @ai_analysis_result.success %>
-      <div class="plugin-check-ai-result">
+      <div class="plugin-check-ai-result plugin-check-ai-markdown">
         <h4><%= l(:label_ai_analysis_result) %></h4>
-        <pre><%= @ai_analysis_result.content %></pre>
+        <div class="plugin-check-ai-preview">
+          <%= plugin_check_markdown_preview(@ai_analysis_result.content) %>
+        </div>
       </div>
     <% else %>
       <p class="plugin-check-ai-error"><%= plugin_check_ai_error_message(@ai_analysis_result) %></p>
@@ -199,3 +207,4 @@
     </tbody>
   </table>
 </div>
+

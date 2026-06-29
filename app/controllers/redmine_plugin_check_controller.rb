@@ -29,11 +29,39 @@ class RedminePluginCheckController < ApplicationController
 
   def ai_analysis
     load_report
-    @ai_analysis_result = RedminePluginCheck::AiClient.new(@ai_settings).call(ai_markdown_export(@plugins))
+
+    if @target_version.blank?
+      @ai_analysis_target_version_missing = true
+    else
+      @ai_analysis_result = RedminePluginCheck::AiClient.new(@ai_settings).call(ai_markdown_export(@plugins))
+    end
 
     render :index
   end
 
+
+  def gemini_models
+    settings = RedminePluginCheck::AiSettings.new
+    result = RedminePluginCheck::AiClient.new(settings).available_models
+
+    if result.success
+      render :json => { :success => true, :models => result.content }
+    else
+      render :json => { :success => false, :message => ai_error_message(result) }, :status => :unprocessable_entity
+    end
+  end
+
+  def ai_test_connection
+    result = RedminePluginCheck::AiClient.new(RedminePluginCheck::AiSettings.new).test_connection
+
+    if result.success
+      flash[:notice] = l(:notice_ai_test_connection_success)
+    else
+      flash[:error] = l(:error_ai_test_connection_failed, :message => ai_error_message(result))
+    end
+
+    redirect_to plugin_settings_path(:id => 'redmine_plugin_check')
+  end
   private
 
   def load_report
@@ -132,6 +160,14 @@ class RedminePluginCheckController < ApplicationController
     RedminePluginCheck::AiMarkdownReport.new(@report, plugins).call
   end
 
+
+  def ai_error_message(result)
+    key = result && result.error ? result.error : :request_failed
+    message = I18n.t("redmine_plugin_check.ai_errors.#{key}", :default => key.to_s)
+    return message unless result && result.status_code
+
+    "#{message} (HTTP #{result.status_code})"
+  end
   def localized_notes(notes)
     notes.map do |note|
       I18n.t("redmine_plugin_check.notes.#{note}", :default => note.to_s)
@@ -166,3 +202,4 @@ class RedminePluginCheckController < ApplicationController
     "plugin_check_ai_#{timestamp}.md"
   end
 end
+

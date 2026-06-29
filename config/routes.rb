@@ -10,4 +10,13 @@ Rails.application.routes.draw do
   post 'plugin_check/ai_analysis',
        :to => 'redmine_plugin_check#ai_analysis',
        :as => 'plugin_check_ai_analysis'
+
+  get 'plugin_check/gemini_models',
+      :to => 'redmine_plugin_check#gemini_models',
+      :as => 'plugin_check_gemini_models'
+
+  get 'plugin_check/ai_test_connection',
+      :to => 'redmine_plugin_check#ai_test_connection',
+      :as => 'plugin_check_ai_test_connection'
 end
+

@@ -145,4 +145,57 @@ module RedminePluginCheckHelper
 
     "#{message} (HTTP #{result.status_code})"
   end
+  def plugin_check_markdown_preview(markdown)
+    lines = markdown.to_s.lines.map(&:chomp)
+    html = []
+    list_open = false
+
+    lines.each do |line|
+      if line.strip.empty?
+        if list_open
+          html << '</ul>'
+          list_open = false
+        end
+        next
+      end
+
+      heading = line.match(/\A(\#{1,4})\s+(.+)\z/)
+      if heading
+        if list_open
+          html << '</ul>'
+          list_open = false
+        end
+        level = [heading[1].length + 1, 5].min
+        html << content_tag("h#{level}", heading[2].strip)
+        next
+      end
+
+      item = line.match(/\A\s*[-*]\s+(.+)\z/)
+      if item
+        unless list_open
+          html << '<ul>'
+          list_open = true
+        end
+        html << content_tag(:li, plugin_check_inline_markdown(item[1].strip))
+        next
+      end
+
+      if list_open
+        html << '</ul>'
+        list_open = false
+      end
+      html << content_tag(:p, plugin_check_inline_markdown(line.strip))
+    end
+
+    html << '</ul>' if list_open
+    html.join.html_safe
+  end
+
+  def plugin_check_inline_markdown(text)
+    escaped = ERB::Util.html_escape(text.to_s)
+    escaped = escaped.gsub(/`([^`]+)`/) { content_tag(:code, Regexp.last_match(1)) }
+    escaped.gsub(/\*\*([^*]+)\*\*/) { content_tag(:strong, Regexp.last_match(1)) }.html_safe
+  end
 end
+
+

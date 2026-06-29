@@ -126,4 +126,23 @@ module RedminePluginCheckHelper
   def plugin_check_finding_class(finding)
     finding.severity.to_s == 'risky' ? 'plugin-check-risky-text' : nil
   end
+
+  def plugin_check_ai_analysis_available?(settings)
+    settings && settings.enabled? && settings.endpoint_present? && settings.api_key_present?
+  end
+
+  def plugin_check_ai_unavailable_message(settings)
+    return l(:text_ai_analysis_disabled) unless settings && settings.enabled?
+    return l(:text_ai_analysis_endpoint_missing) unless settings.endpoint_present?
+
+    l(:text_ai_analysis_api_key_missing)
+  end
+
+  def plugin_check_ai_error_message(result)
+    key = result && result.error ? result.error : :request_failed
+    message = I18n.t("redmine_plugin_check.ai_errors.#{key}", :default => key.to_s)
+    return message unless result && result.status_code
+
+    "#{message} (HTTP #{result.status_code})"
+  end
 end

@@ -58,6 +58,32 @@
   </p>
 <% end %>
 
+<div class="plugin-check-ai-panel">
+  <h3><%= l(:label_ai_analysis) %></h3>
+  <% if plugin_check_ai_analysis_available?(@ai_settings) %>
+    <%= form_tag plugin_check_ai_analysis_path, :method => :post, :class => 'plugin-check-ai-form' do %>
+      <%= hidden_field_tag :target_version, @target_version %>
+      <%= hidden_field_tag :status_filter, @status_filter %>
+      <%= hidden_field_tag :check_latest, '1' if @check_latest %>
+      <%= hidden_field_tag :show_details, '1' if @show_details %>
+      <%= submit_tag l(:button_ai_analyze), :name => nil, :class => 'icon icon-checked' %>
+    <% end %>
+  <% else %>
+    <p class="plugin-check-ai-unavailable"><%= plugin_check_ai_unavailable_message(@ai_settings) %></p>
+  <% end %>
+
+  <% if @ai_analysis_result %>
+    <% if @ai_analysis_result.success %>
+      <div class="plugin-check-ai-result">
+        <h4><%= l(:label_ai_analysis_result) %></h4>
+        <pre><%= @ai_analysis_result.content %></pre>
+      </div>
+    <% else %>
+      <p class="plugin-check-ai-error"><%= plugin_check_ai_error_message(@ai_analysis_result) %></p>
+    <% end %>
+  <% end %>
+</div>
+
 <div class="autoscroll plugin-check-table-shell<%= @plugins.size >= 5 ? ' plugin-check-table-shell-scroll' : '' %>">
   <table class="list plugin-check-plugins<%= @show_details ? ' plugin-check-plugins-detail' : ' plugin-check-plugins-summary' %>">
     <colgroup>

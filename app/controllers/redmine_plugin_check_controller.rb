@@ -27,6 +27,13 @@ class RedminePluginCheckController < ApplicationController
               :type => 'text/markdown; charset=utf-8'
   end
 
+  def ai_analysis
+    load_report
+    @ai_analysis_result = RedminePluginCheck::AiClient.new(@ai_settings).call(ai_markdown_export(@plugins))
+
+    render :index
+  end
+
   private
 
   def load_report
@@ -40,6 +47,7 @@ class RedminePluginCheckController < ApplicationController
     ).call
 
     @plugins = filtered_plugins(sorted_plugins(@report.plugins))
+    @ai_settings = RedminePluginCheck::AiSettings.new
   end
 
   def normalize_status_filter(value)

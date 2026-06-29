@@ -69,7 +69,12 @@
       <%= submit_tag l(:button_ai_analyze), :name => nil, :class => 'icon icon-checked' %>
     <% end %>
   <% else %>
-    <p class="plugin-check-ai-unavailable"><%= plugin_check_ai_unavailable_message(@ai_settings) %></p>
+    <p class="plugin-check-ai-unavailable">
+      <%= plugin_check_ai_unavailable_message(@ai_settings) %>
+      <%= link_to l(:label_plugin_check_settings),
+                  plugin_settings_path(:id => 'redmine_plugin_check'),
+                  :class => 'icon icon-settings' %>
+    </p>
   <% end %>
 
   <% if @ai_analysis_result %>

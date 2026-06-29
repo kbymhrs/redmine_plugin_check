@@ -1,5 +1,8 @@
 module RedminePluginCheck
   class AiSettings
+    DEFAULT_SYSTEM_PROMPT_ENGLISH = 'You are an expert Redmine upgrade advisor. Analyze the plugin compatibility report and return concrete actions for the administrator.'.freeze
+    DEFAULT_SYSTEM_PROMPT_JAPANESE = 'あなたは Redmine アップグレード支援の専門家です。プラグイン互換性レポートを分析し、管理者が実行すべき具体的な対応を日本語で返してください。'.freeze
+
     DEFAULTS = {
       'ai_enabled' => '0',
       'ai_provider_label' => 'OpenAI compatible',
@@ -9,12 +12,13 @@ module RedminePluginCheck
       'ai_model' => 'gpt-4.1-mini',
       'ai_timeout_seconds' => '60',
       'ai_max_prompt_characters' => '30000',
-      'ai_system_prompt' => 'You are an expert Redmine upgrade advisor. Analyze the plugin compatibility report and return concrete actions for the administrator.'
+      'ai_system_prompt' => ''
     }.freeze
 
-    def initialize(settings = nil, env = ENV)
+    def initialize(settings = nil, env = ENV, locale = nil)
       @settings = DEFAULTS.merge(normalize_settings(settings || plugin_settings))
       @env = env
+      @locale = locale
     end
 
     def enabled?
@@ -61,12 +65,15 @@ module RedminePluginCheck
     end
 
     def system_prompt
-      value('ai_system_prompt')
+      prompt = value('ai_system_prompt')
+      return localized_default_system_prompt if default_system_prompt?(prompt)
+
+      prompt
     end
 
     private
 
-    attr_reader :settings, :env
+    attr_reader :settings, :env, :locale
 
     def plugin_settings
       if defined?(Setting) && Setting.respond_to?(:plugin_redmine_plugin_check)
@@ -100,6 +107,27 @@ module RedminePluginCheck
 
     def present?(value)
       !value.to_s.strip.empty?
+    end
+
+    def default_system_prompt?(prompt)
+      !present?(prompt) ||
+        prompt == DEFAULT_SYSTEM_PROMPT_ENGLISH ||
+        prompt == DEFAULT_SYSTEM_PROMPT_JAPANESE
+    end
+
+    def localized_default_system_prompt
+      japanese_locale? ? DEFAULT_SYSTEM_PROMPT_JAPANESE : DEFAULT_SYSTEM_PROMPT_ENGLISH
+    end
+
+    def japanese_locale?
+      current_locale.to_s.downcase.start_with?('ja')
+    end
+
+    def current_locale
+      return locale if locale
+      return I18n.locale if defined?(I18n) && I18n.respond_to?(:locale)
+
+      nil
     end
   end
 end

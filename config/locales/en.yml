@@ -19,6 +19,7 @@ en:
   label_export_csv: "CSV export"
   label_export_ai_markdown: "AI Markdown export"
   label_ai_analysis: "AI analysis"
+  label_plugin_check_settings: "Settings"
   label_ai_analysis_result: "AI analysis result"
   label_ai_analysis_enabled: "Enable AI analysis"
   label_ai_provider_label: "API provider label"

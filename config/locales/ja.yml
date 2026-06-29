@@ -19,6 +19,7 @@ ja:
   label_export_csv: "CSV 出力"
   label_export_ai_markdown: "AI 用 Markdown 出力"
   label_ai_analysis: "AI 分析"
+  label_plugin_check_settings: "設定"
   label_ai_analysis_result: "AI 分析結果"
   label_ai_analysis_enabled: "AI 分析を有効にする"
   label_ai_provider_label: "API プロバイダ表示名"

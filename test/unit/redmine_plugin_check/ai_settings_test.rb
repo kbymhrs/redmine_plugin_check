@@ -39,4 +39,36 @@ class RedminePluginCheckAiSettingsTest < ActiveSupport::TestCase
     assert_equal 60, settings.timeout_seconds
     assert_equal 30000, settings.max_prompt_characters
   end
+
+  test 'uses Japanese default system prompt for Japanese locale' do
+    settings = RedminePluginCheck::AiSettings.new({}, {}, :ja)
+
+    assert_includes settings.system_prompt, '日本語'
+  end
+
+  test 'uses English default system prompt outside Japanese locale' do
+    settings = RedminePluginCheck::AiSettings.new({}, {}, :en)
+
+    assert_includes settings.system_prompt, 'Redmine upgrade advisor'
+  end
+
+  test 'localizes old saved default system prompt' do
+    settings = RedminePluginCheck::AiSettings.new(
+      { 'ai_system_prompt' => RedminePluginCheck::AiSettings::DEFAULT_SYSTEM_PROMPT_ENGLISH },
+      {},
+      :ja
+    )
+
+    assert_includes settings.system_prompt, '日本語'
+  end
+
+  test 'keeps customized system prompt' do
+    settings = RedminePluginCheck::AiSettings.new(
+      { 'ai_system_prompt' => 'Custom prompt' },
+      {},
+      :ja
+    )
+
+    assert_equal 'Custom prompt', settings.system_prompt
+  end
 end

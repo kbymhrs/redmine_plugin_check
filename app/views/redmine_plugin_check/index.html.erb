@@ -49,6 +49,12 @@
     <%= link_to l(:label_export_csv),
                 plugin_check_path(csv_params),
                 :class => 'icon icon-save' %>
+    <% ai_markdown_params = { :target_version => @target_version, :status_filter => @status_filter } %>
+    <% ai_markdown_params[:check_latest] = '1' if @check_latest %>
+    <% ai_markdown_params[:show_details] = '1' if @show_details %>
+    <%= link_to l(:label_export_ai_markdown),
+                plugin_check_ai_markdown_path(ai_markdown_params),
+                :class => 'icon icon-save' %>
   </p>
 <% end %>
 

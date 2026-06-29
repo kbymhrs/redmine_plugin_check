@@ -17,6 +17,7 @@ ja:
   label_has_gemfile: "Gemfile"
   label_compatibility_findings: "互換性 scan"
   label_export_csv: "CSV 出力"
+  label_export_ai_markdown: "AI 用 Markdown 出力"
   label_show_detail_columns: "詳細列も表示する"
   label_status_filter: "表示"
   label_status_filter_all: "すべて"

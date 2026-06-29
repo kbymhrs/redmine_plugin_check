@@ -13,6 +13,7 @@ Rails.configuration.to_prepare do
   require_dependency File.join(plugin_path, 'app/services/redmine_plugin_check/version_requirement')
   require_dependency File.join(plugin_path, 'app/services/redmine_plugin_check/compatibility_scanner')
   require_dependency File.join(plugin_path, 'app/services/redmine_plugin_check/latest_version_checker')
+  require_dependency File.join(plugin_path, 'app/services/redmine_plugin_check/ai_markdown_report')
   require_dependency File.join(plugin_path, 'app/services/redmine_plugin_check/analyzer')
   require_dependency File.join(plugin_path, 'app/helpers/redmine_plugin_check_helper')
   require_dependency File.join(plugin_path, 'app/controllers/redmine_plugin_check_controller')

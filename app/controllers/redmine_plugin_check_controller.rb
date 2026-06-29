@@ -7,16 +7,7 @@ class RedminePluginCheckController < ApplicationController
   before_action :require_admin
 
   def index
-    @target_version = params[:target_version].to_s.strip
-    @check_latest = params[:check_latest].to_s == '1'
-    @status_filter = normalize_status_filter(params[:status_filter])
-    @show_details = params[:show_details].to_s == '1'
-    @report = RedminePluginCheck::Analyzer.new(
-      :target_version => @target_version,
-      :check_latest => @check_latest
-    ).call
-
-    @plugins = filtered_plugins(sorted_plugins(@report.plugins))
+    load_report
 
     respond_to do |format|
       format.html
@@ -28,7 +19,28 @@ class RedminePluginCheckController < ApplicationController
     end
   end
 
+  def ai_markdown
+    load_report
+
+    send_data ai_markdown_export(@plugins),
+              :filename => ai_markdown_filename,
+              :type => 'text/markdown; charset=utf-8'
+  end
+
   private
+
+  def load_report
+    @target_version = params[:target_version].to_s.strip
+    @check_latest = params[:check_latest].to_s == '1'
+    @status_filter = normalize_status_filter(params[:status_filter])
+    @show_details = params[:show_details].to_s == '1'
+    @report = RedminePluginCheck::Analyzer.new(
+      :target_version => @target_version,
+      :check_latest => @check_latest
+    ).call
+
+    @plugins = filtered_plugins(sorted_plugins(@report.plugins))
+  end
 
   def normalize_status_filter(value)
     filter = value.to_s
@@ -108,6 +120,10 @@ class RedminePluginCheckController < ApplicationController
     end
   end
 
+  def ai_markdown_export(plugins)
+    RedminePluginCheck::AiMarkdownReport.new(@report, plugins).call
+  end
+
   def localized_notes(notes)
     notes.map do |note|
       I18n.t("redmine_plugin_check.notes.#{note}", :default => note.to_s)
@@ -135,5 +151,10 @@ class RedminePluginCheckController < ApplicationController
   def csv_filename
     timestamp = Time.zone.now.strftime('%Y%m%d%H%M%S')
     "plugin_check_#{timestamp}.csv"
+  end
+
+  def ai_markdown_filename
+    timestamp = Time.zone.now.strftime('%Y%m%d%H%M%S')
+    "plugin_check_ai_#{timestamp}.md"
   end
 end

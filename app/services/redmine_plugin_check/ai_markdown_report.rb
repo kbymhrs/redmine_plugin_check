@@ -1,20 +1,5 @@
 module RedminePluginCheck
   class AiMarkdownReport
-    DEFAULT_REQUEST = <<-TEXT
-あなたは Redmine プラグイン移行支援の専門家です。
-以下の診断結果をもとに、Redmine を現在のバージョンから移行先バージョンへアップグレードするために必要な作業を分析してください。
-
-出力してほしい内容:
-1. 全体の移行リスク
-2. 優先して対応すべきプラグイン
-3. 各プラグインごとの推奨対応
-4. 削除・更新・代替検討が必要なもの
-5. 追加調査が必要なもの
-6. 実施順序
-7. 管理者向けの簡潔な結論
-TEXT
-    DEFAULT_REQUEST.freeze
-
     SECRET_PATTERNS = [
       [/((?:api[_-]?key|token|secret|password)\s*[=:]\s*)[^\s&]+/i, '\\1[REDACTED]'],
       [/(Authorization:\s*Bearer\s+)[A-Za-z0-9._\-]+/i, '\\1[REDACTED]'],
@@ -37,7 +22,7 @@ TEXT
 
     def build_lines
       lines = []
-      lines << '# Redmine Plugin Compatibility AI Report'
+      lines << "# #{markdown_text(:title)}"
       lines << ''
       append_summary(lines)
       append_priority_plugins(lines)
@@ -47,14 +32,14 @@ TEXT
     end
 
     def append_summary(lines)
-      lines << '## Summary'
+      lines << "## #{markdown_text(:summary)}"
       lines << ''
-      lines << "- Generated at: #{formatted_time(generated_at)}"
-      lines << "- Current Redmine version: #{text(report.redmine_version)}"
-      lines << "- Target Redmine version: #{text(report.target_version)}"
-      lines << "- Ruby version: #{text(report.ruby_version)}"
-      lines << "- Rails version: #{text(report.rails_version)}"
-      lines << "- Plugin count: #{plugins.size}"
+      lines << "- #{markdown_text(:generated_at)}: #{formatted_time(generated_at)}"
+      lines << "- #{markdown_text(:current_redmine_version)}: #{text(report.redmine_version)}"
+      lines << "- #{markdown_text(:target_redmine_version)}: #{text(report.target_version)}"
+      lines << "- #{markdown_text(:ruby_version)}: #{text(report.ruby_version)}"
+      lines << "- #{markdown_text(:rails_version)}: #{text(report.rails_version)}"
+      lines << "- #{markdown_text(:plugin_count)}: #{plugins.size}"
       status_counts.each do |status, count|
         lines << "- #{status}: #{count}"
       end
@@ -64,10 +49,10 @@ TEXT
     def append_priority_plugins(lines)
       priority_plugins = plugins.select { |plugin| %w[Risky Warning Unknown].include?(plugin.status.to_s) }
 
-      lines << '## Priority Review List'
+      lines << "## #{markdown_text(:priority_review_list)}"
       lines << ''
       if priority_plugins.empty?
-        lines << '- No Risky, Warning, or Unknown plugins in the selected result.'
+        lines << "- #{markdown_text(:no_priority_plugins)}"
       else
         priority_plugins.each do |plugin|
           reasons = localized_notes(plugin.primary_reasons)
@@ -78,30 +63,30 @@ TEXT
     end
 
     def append_plugin_details(lines)
-      lines << '## Plugin Details'
+      lines << "## #{markdown_text(:plugin_details)}"
       lines << ''
       plugins.each do |plugin|
         lines << "### #{plugin_title(plugin)}"
         lines << ''
-        lines << "- Status: #{text(plugin.status)}"
-        lines << "- Name: #{text(plugin.name)}"
-        lines << "- Plugin ID: #{text(plugin.id)}"
-        lines << "- Version: #{text(plugin.version)}"
-        lines << "- Latest version: #{text(plugin.latest_version)}"
-        lines << "- Latest version source: #{text(plugin.latest_version_source)}"
-        lines << "- Latest version error: #{localized_latest_version_error(plugin.latest_version_error)}"
-        lines << "- Author: #{text(plugin.author)}"
-        lines << "- Last modified at: #{formatted_time(plugin.last_modified_at)}"
-        lines << "- requires_redmine: #{text(plugin.requires_redmine)}"
-        lines << "- requires_redmine satisfied: #{boolean_text(plugin.requires_redmine_satisfied)}"
-        lines << "- requires_redmine lower bound only: #{boolean_text(plugin.requires_redmine_lower_bound_only)}"
-        lines << "- Target major jump: #{boolean_text(plugin.target_major_jump)}"
-        lines << "- Redmine version condition in init.rb: #{boolean_text(plugin.redmine_condition_in_init)}"
-        lines << "- Has db/migrate: #{boolean_text(plugin.has_migrations)}"
-        lines << "- Has Gemfile: #{boolean_text(plugin.has_gemfile)}"
-        lines << "- Primary reasons: #{list_text(localized_notes(plugin.primary_reasons))}"
-        lines << "- Notes: #{list_text(localized_notes(plugin.notes))}"
-        lines << '- Compatibility findings:'
+        lines << "- #{markdown_text(:status)}: #{text(plugin.status)}"
+        lines << "- #{markdown_text(:name)}: #{text(plugin.name)}"
+        lines << "- #{markdown_text(:plugin_id)}: #{text(plugin.id)}"
+        lines << "- #{markdown_text(:version)}: #{text(plugin.version)}"
+        lines << "- #{markdown_text(:latest_version)}: #{text(plugin.latest_version)}"
+        lines << "- #{markdown_text(:latest_version_source)}: #{text(plugin.latest_version_source)}"
+        lines << "- #{markdown_text(:latest_version_error)}: #{localized_latest_version_error(plugin.latest_version_error)}"
+        lines << "- #{markdown_text(:author)}: #{text(plugin.author)}"
+        lines << "- #{markdown_text(:last_modified_at)}: #{formatted_time(plugin.last_modified_at)}"
+        lines << "- #{markdown_text(:requires_redmine)}: #{text(plugin.requires_redmine)}"
+        lines << "- #{markdown_text(:requires_redmine_satisfied)}: #{boolean_text(plugin.requires_redmine_satisfied)}"
+        lines << "- #{markdown_text(:requires_redmine_lower_bound_only)}: #{boolean_text(plugin.requires_redmine_lower_bound_only)}"
+        lines << "- #{markdown_text(:target_major_jump)}: #{boolean_text(plugin.target_major_jump)}"
+        lines << "- #{markdown_text(:redmine_version_condition_in_init)}: #{boolean_text(plugin.redmine_condition_in_init)}"
+        lines << "- #{markdown_text(:has_migrations)}: #{boolean_text(plugin.has_migrations)}"
+        lines << "- #{markdown_text(:has_gemfile)}: #{boolean_text(plugin.has_gemfile)}"
+        lines << "- #{markdown_text(:primary_reasons)}: #{list_text(localized_notes(plugin.primary_reasons))}"
+        lines << "- #{markdown_text(:notes)}: #{list_text(localized_notes(plugin.notes))}"
+        lines << "- #{markdown_text(:compatibility_findings)}:"
         append_findings(lines, plugin.compatibility_findings)
         lines << ''
       end
@@ -119,10 +104,14 @@ TEXT
     end
 
     def append_ai_request(lines)
-      lines << '## Request For AI'
+      lines << "## #{markdown_text(:request_for_ai)}"
       lines << ''
-      lines << DEFAULT_REQUEST.strip
+      lines << markdown_text(:request).strip
       lines << ''
+    end
+
+    def markdown_text(key)
+      I18n.t("redmine_plugin_check.ai_markdown.#{key}")
     end
 
     def status_counts

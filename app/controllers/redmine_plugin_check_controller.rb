@@ -104,29 +104,7 @@ class RedminePluginCheckController < ApplicationController
     require 'csv'
 
     CSV.generate(:headers => true) do |csv|
-      csv << [
-        'status',
-        'name',
-        'plugin_id',
-        'version',
-        'latest_version',
-        'latest_version_source',
-        'latest_version_error',
-        'author',
-        'last_modified_at',
-        'requires_redmine',
-        'requires_redmine_satisfied',
-        'requires_redmine_lower_bound_only',
-        'target_major_jump',
-        'redmine_condition_in_init',
-        'has_migrations',
-        'has_gemfile',
-        'compatibility_findings',
-        'primary_reasons',
-        'notes',
-        'review_result',
-        'action_plan'
-      ]
+      csv << csv_headers
 
       plugins.each do |plugin|
         csv << [
@@ -154,6 +132,32 @@ class RedminePluginCheckController < ApplicationController
         ]
       end
     end
+  end
+
+  def csv_headers
+    [
+      l(:field_status),
+      l(:field_name),
+      l(:field_identifier),
+      l(:field_version),
+      l(:label_latest_version),
+      l(:label_latest_version_source),
+      l(:label_latest_version_error),
+      l(:field_author),
+      l(:label_last_modified_at),
+      l(:label_requires_redmine),
+      l(:label_requires_redmine_satisfied),
+      l(:label_requires_redmine_lower_bound_only),
+      l(:label_target_major_jump),
+      l(:label_redmine_condition_in_init),
+      l(:label_has_migrations),
+      l(:label_has_gemfile),
+      l(:label_compatibility_findings),
+      l(:label_primary_reasons),
+      l(:label_notes),
+      l(:label_review_result),
+      l(:label_action_plan)
+    ]
   end
 
   def ai_markdown_export(plugins)

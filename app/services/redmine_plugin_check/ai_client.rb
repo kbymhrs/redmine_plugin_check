@@ -123,7 +123,7 @@ module RedminePluginCheck
       limit = settings.max_prompt_characters
       return text if text.length <= limit
 
-      note = "\n\n[TRUNCATED: The AI prompt exceeded #{limit} characters and was cut before sending.]"
+      note = "\n\n" + I18n.t('redmine_plugin_check.ai.truncated_prompt', :limit => limit)
       return note[0, limit] if limit <= note.length
 
       text[0, limit - note.length] + note

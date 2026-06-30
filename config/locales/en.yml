@@ -7,9 +7,12 @@ en:
   label_target_redmine_version: "Target Redmine version"
   label_check_latest_version: "Fetch latest versions"
   label_latest_version: "Latest version"
+  label_latest_version_source: "Latest version source"
+  label_latest_version_error: "Latest version error"
   label_primary_reasons: "Main status reasons"
   label_last_modified_at: "Last modified"
   label_requires_redmine: "requires_redmine"
+  label_requires_redmine_satisfied: "requires_redmine result"
   label_requires_redmine_lower_bound_only: "Lower bound only"
   label_target_major_jump: "Major jump"
   label_redmine_condition_in_init: "Version condition in init.rb"
@@ -53,6 +56,8 @@ en:
   label_plugin_check_column_help: "Column guide"
   label_plugin_check_help_column_name: "Column"
   label_plugin_check_help_column_description: "What it checks"
+  label_review_result: "Review result"
+  label_action_plan: "Action plan"
   text_redmine_plugin_check_intro: "Read-only review of compatibility signals for installed plugins before a Redmine upgrade."
   redmine_plugin_check:
     column_help:
@@ -115,4 +120,50 @@ en:
       has_database_migrations: "Plugin has database migrations"
       has_plugin_gemfile: "Plugin has its own Gemfile"
       target_version_missing: "Target version was not provided"
+    ai:
+      default_system_prompt: "You are an expert Redmine upgrade advisor. Analyze the plugin compatibility report and return concrete actions for the administrator."
+      truncated_prompt: "[TRUNCATED: The AI prompt exceeded %{limit} characters and was cut before sending.]"
+    ai_markdown:
+      title: "Redmine Plugin Compatibility AI Report"
+      summary: "Summary"
+      generated_at: "Generated at"
+      current_redmine_version: "Current Redmine version"
+      target_redmine_version: "Target Redmine version"
+      ruby_version: "Ruby version"
+      rails_version: "Rails version"
+      plugin_count: "Plugin count"
+      priority_review_list: "Priority Review List"
+      no_priority_plugins: "No Risky, Warning, or Unknown plugins in the selected result."
+      plugin_details: "Plugin Details"
+      status: "Status"
+      name: "Name"
+      plugin_id: "Plugin ID"
+      version: "Version"
+      latest_version: "Latest version"
+      latest_version_source: "Latest version source"
+      latest_version_error: "Latest version error"
+      author: "Author"
+      last_modified_at: "Last modified at"
+      requires_redmine: "requires_redmine"
+      requires_redmine_satisfied: "requires_redmine satisfied"
+      requires_redmine_lower_bound_only: "requires_redmine lower bound only"
+      target_major_jump: "Target major jump"
+      redmine_version_condition_in_init: "Redmine version condition in init.rb"
+      has_migrations: "Has db/migrate"
+      has_gemfile: "Has Gemfile"
+      primary_reasons: "Main status reasons"
+      notes: "Notes"
+      compatibility_findings: "Compatibility findings"
+      request_for_ai: "Request For AI"
+      request: |-
+        You are a Redmine plugin migration advisor.
+        Based on the following diagnostic result, analyze the work needed to upgrade Redmine from the current version to the target version.
 
+        Please include:
+        1. Overall migration risk
+        2. Plugins that should be handled first
+        3. Recommended action for each plugin
+        4. Plugins to remove, update, replace, or investigate alternatives for
+        5. Items that need additional research
+        6. Suggested execution order
+        7. A concise conclusion for administrators

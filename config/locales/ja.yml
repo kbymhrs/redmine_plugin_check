@@ -7,9 +7,12 @@ ja:
   label_target_redmine_version: "移行先 Redmine バージョン"
   label_check_latest_version: "最新バージョン情報も取得する"
   label_latest_version: "最新バージョン"
+  label_latest_version_source: "最新バージョン取得元"
+  label_latest_version_error: "最新バージョン取得エラー"
   label_primary_reasons: "ステータスの主な理由"
   label_last_modified_at: "最終更新日"
   label_requires_redmine: "requires_redmine"
+  label_requires_redmine_satisfied: "requires_redmine 判定"
   label_requires_redmine_lower_bound_only: "下限のみ"
   label_target_major_jump: "major 差分"
   label_redmine_condition_in_init: "init.rb のバージョン条件"
@@ -53,6 +56,8 @@ ja:
   label_plugin_check_column_help: "項目の見方"
   label_plugin_check_help_column_name: "項目"
   label_plugin_check_help_column_description: "見ている内容"
+  label_review_result: "レビュー結果"
+  label_action_plan: "対応方針"
   text_redmine_plugin_check_intro: "Redmine アップグレード前に、インストール済み plugin の互換性シグナルを読み取り専用で確認します。"
   redmine_plugin_check:
     column_help:
@@ -115,4 +120,50 @@ ja:
       has_database_migrations: "db/migrate があります"
       has_plugin_gemfile: "プラグイン独自の Gemfile があります"
       target_version_missing: "移行先 Redmine バージョンが未入力です"
+    ai:
+      default_system_prompt: "あなたは Redmine アップグレード支援の専門家です。プラグイン互換性レポートを分析し、管理者が実行すべき具体的な対応を日本語で返してください。"
+      truncated_prompt: "[切り詰め: AI へ送信する内容が %{limit} 文字を超えたため、送信前に一部を省略しました。]"
+    ai_markdown:
+      title: "Redmine プラグイン互換性 AI レポート"
+      summary: "概要"
+      generated_at: "生成日時"
+      current_redmine_version: "現在の Redmine バージョン"
+      target_redmine_version: "移行先 Redmine バージョン"
+      ruby_version: "Ruby バージョン"
+      rails_version: "Rails バージョン"
+      plugin_count: "プラグイン数"
+      priority_review_list: "優先確認リスト"
+      no_priority_plugins: "選択中の結果に Risky / Warning / Unknown のプラグインはありません。"
+      plugin_details: "プラグイン詳細"
+      status: "ステータス"
+      name: "名称"
+      plugin_id: "識別子"
+      version: "バージョン"
+      latest_version: "最新バージョン"
+      latest_version_source: "最新バージョン取得元"
+      latest_version_error: "最新バージョン取得エラー"
+      author: "作成者"
+      last_modified_at: "最終更新日"
+      requires_redmine: "requires_redmine"
+      requires_redmine_satisfied: "requires_redmine 判定"
+      requires_redmine_lower_bound_only: "requires_redmine 下限のみ"
+      target_major_jump: "major 差分"
+      redmine_version_condition_in_init: "init.rb のバージョン条件"
+      has_migrations: "db/migrate"
+      has_gemfile: "Gemfile"
+      primary_reasons: "ステータスの主な理由"
+      notes: "メモ"
+      compatibility_findings: "互換性 scan"
+      request_for_ai: "AI への依頼"
+      request: |-
+        あなたは Redmine プラグイン移行支援の専門家です。
+        以下の診断結果をもとに、Redmine を現在のバージョンから移行先バージョンへアップグレードするために必要な作業を分析してください。
 
+        出力してほしい内容:
+        1. 全体の移行リスク
+        2. 優先して対応すべきプラグイン
+        3. 各プラグインごとの推奨対応
+        4. 削除・更新・代替検討が必要なもの
+        5. 追加調査が必要なもの
+        6. 実施順序
+        7. 管理者向けの簡潔な結論

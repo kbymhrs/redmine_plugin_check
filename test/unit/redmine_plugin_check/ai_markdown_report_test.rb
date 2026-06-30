@@ -27,38 +27,59 @@ class RedminePluginCheckAiMarkdownReportTest < ActiveSupport::TestCase
   )
   FakeFinding = Struct.new(:key, :path, :line, :severity)
 
-  test 'renders summary priority list plugin details and ai request' do
-    plugin = fake_plugin(
-      :status => 'Risky',
-      :primary_reasons => [:target_version_outside_requires_redmine],
-      :notes => [:requires_redmine_lower_bound_only],
-      :compatibility_findings => [FakeFinding.new(:alias_method_chain, 'lib/patch.rb', 12, 'risky')]
-    )
-    report = fake_report([plugin])
+  test 'renders english summary priority list plugin details and ai request' do
+    with_locale(:en) do
+      plugin = fake_plugin(
+        :status => 'Risky',
+        :primary_reasons => [:target_version_outside_requires_redmine],
+        :notes => [:requires_redmine_lower_bound_only],
+        :compatibility_findings => [FakeFinding.new(:alias_method_chain, 'lib/patch.rb', 12, 'risky')]
+      )
+      report = fake_report([plugin])
 
-    markdown = RedminePluginCheck::AiMarkdownReport.new(report, [plugin], :generated_at => Time.utc(2026, 6, 29, 0, 0, 0)).call
+      markdown = RedminePluginCheck::AiMarkdownReport.new(report, [plugin], :generated_at => Time.utc(2026, 6, 29, 0, 0, 0)).call
 
-    assert_includes markdown, '# Redmine Plugin Compatibility AI Report'
-    assert_includes markdown, '- Target Redmine version: 6.0.0'
-    assert_includes markdown, '- Risky: 1'
-    assert_includes markdown, '## Priority Review List'
-    assert_includes markdown, 'Risky - Legacy Plugin (`legacy_plugin`)'
-    assert_includes markdown, 'alias_method_chain (lib/patch.rb:12)'
-    assert_includes markdown, '## Request For AI'
+      assert_includes markdown, '# Redmine Plugin Compatibility AI Report'
+      assert_includes markdown, '- Target Redmine version: 6.0.0'
+      assert_includes markdown, '- Risky: 1'
+      assert_includes markdown, '## Priority Review List'
+      assert_includes markdown, 'Risky - Legacy Plugin (`legacy_plugin`)'
+      assert_includes markdown, 'alias_method_chain (lib/patch.rb:12)'
+      assert_includes markdown, '## Request For AI'
+      assert_includes markdown, 'You are a Redmine plugin migration advisor.'
+      assert !markdown.include?('出力してほしい内容'), 'English markdown should not include the Japanese AI request'
+    end
+  end
+
+  test 'renders japanese headings and ai request when locale is japanese' do
+    with_locale(:ja) do
+      plugin = fake_plugin(:status => 'OK')
+      report = fake_report([plugin])
+
+      markdown = RedminePluginCheck::AiMarkdownReport.new(report, [plugin], :generated_at => Time.utc(2026, 6, 29, 0, 0, 0)).call
+
+      assert_includes markdown, '# Redmine プラグイン互換性 AI レポート'
+      assert_includes markdown, '- 移行先 Redmine バージョン: 6.0.0'
+      assert_includes markdown, '## AI への依頼'
+      assert_includes markdown, 'あなたは Redmine プラグイン移行支援の専門家です。'
+      assert !markdown.include?('You are a Redmine plugin migration advisor.'), 'Japanese markdown should not include the English AI request'
+    end
   end
 
   test 'redacts likely secrets before returning markdown' do
-    plugin = fake_plugin(
-      :latest_version_source => 'https://example.test/releases?token=super-secret',
-      :notes => ['Authorization: Bearer sk-secret1234567890']
-    )
-    report = fake_report([plugin])
+    with_locale(:en) do
+      plugin = fake_plugin(
+        :latest_version_source => 'https://example.test/releases?token=super-secret',
+        :notes => ['Authorization: Bearer sk-secret1234567890']
+      )
+      report = fake_report([plugin])
 
-    markdown = RedminePluginCheck::AiMarkdownReport.new(report, [plugin], :generated_at => Time.utc(2026, 6, 29, 0, 0, 0)).call
+      markdown = RedminePluginCheck::AiMarkdownReport.new(report, [plugin], :generated_at => Time.utc(2026, 6, 29, 0, 0, 0)).call
 
-    assert_includes markdown, '[REDACTED]'
-    assert !markdown.include?('super-secret'), 'token value should be redacted'
-    assert !markdown.include?('sk-secret1234567890'), 'OpenAI-like key should be redacted'
+      assert_includes markdown, '[REDACTED]'
+      assert !markdown.include?('super-secret'), 'token value should be redacted'
+      assert !markdown.include?('sk-secret1234567890'), 'OpenAI-like key should be redacted'
+    end
   end
 
   private
@@ -111,5 +132,13 @@ class RedminePluginCheckAiMarkdownReportTest < ActiveSupport::TestCase
       values[:status],
       values[:notes]
     )
+  end
+
+  def with_locale(locale)
+    previous_locale = I18n.locale
+    I18n.locale = locale
+    yield
+  ensure
+    I18n.locale = previous_locale
   end
 end

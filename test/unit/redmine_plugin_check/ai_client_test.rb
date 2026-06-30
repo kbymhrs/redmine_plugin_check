@@ -46,12 +46,18 @@ class RedminePluginCheckAiClientTest < ActiveSupport::TestCase
       FakeResponse.new('200', JSON.generate('choices' => [{ 'message' => { 'content' => 'Short plan' } }]))
     end
 
-    result = client.call('x' * 500)
-    sent_prompt = payloads.first['messages'].last['content']
+    previous_locale = I18n.locale
+    begin
+      I18n.locale = :en
+      result = client.call('x' * 500)
+      sent_prompt = payloads.first['messages'].last['content']
 
-    assert result.success
-    assert sent_prompt.length <= 160
-    assert_includes sent_prompt, 'TRUNCATED'
+      assert result.success
+      assert sent_prompt.length <= 160
+      assert_includes sent_prompt, 'TRUNCATED'
+    ensure
+      I18n.locale = previous_locale
+    end
   end
 
   test 'classifies invalid response shape' do

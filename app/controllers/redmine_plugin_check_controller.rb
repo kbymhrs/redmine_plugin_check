@@ -40,6 +40,12 @@ class RedminePluginCheckController < ApplicationController
   end
 
 
+  def ai_analysis_download
+    send_data params[:content].to_s,
+              :filename => ai_analysis_filename,
+              :type => 'text/markdown; charset=utf-8'
+  end
+
   def gemini_models
     settings = RedminePluginCheck::AiSettings.new
     result = RedminePluginCheck::AiClient.new(settings).available_models
@@ -204,6 +210,11 @@ class RedminePluginCheckController < ApplicationController
   def ai_markdown_filename
     timestamp = Time.zone.now.strftime('%Y%m%d%H%M%S')
     "plugin_check_ai_#{timestamp}.md"
+  end
+
+  def ai_analysis_filename
+    timestamp = Time.zone.now.strftime('%Y%m%d%H%M%S')
+    "plugin_check_ai_analysis_#{timestamp}.md"
   end
 end
 

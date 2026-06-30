@@ -42,6 +42,7 @@ en:
   label_ai_max_prompt_characters: "Max prompt characters"
   label_ai_system_prompt: "System prompt"
   button_ai_analyze: "Analyze with AI"
+  button_ai_reanalyze: "Analyze again"
   button_ai_fetch_gemini_models: "Fetch Gemini models"
   text_ai_fetching_gemini_models: "Fetching Gemini models..."
   text_ai_select_gemini_model: "Select a model to update the endpoint."

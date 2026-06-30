@@ -1,3 +1,5 @@
+require 'time'
+
 class RedminePluginCheckController < ApplicationController
   prepend_view_path File.expand_path('../../views', __FILE__)
 
@@ -183,18 +185,28 @@ class RedminePluginCheckController < ApplicationController
   def save_latest_ai_analysis_result
     return unless @ai_analysis_result && @ai_analysis_result.success
 
-    RedminePluginCheck::AiSettings.save_latest_ai_analysis(@ai_analysis_result.content, Time.zone.now)
+    generated_at = Time.now.utc
+    RedminePluginCheck::AiSettings.save_latest_ai_analysis(@ai_analysis_result.content, generated_at)
     @latest_ai_analysis_content = @ai_analysis_result.content
-    @latest_ai_analysis_generated_at = Time.zone.now.strftime('%Y-%m-%d %H:%M:%S %z')
+    @latest_ai_analysis_generated_at = generated_at
   end
 
   def load_latest_ai_analysis_result
     @latest_ai_analysis_content = @ai_settings.latest_ai_analysis_content
-    @latest_ai_analysis_generated_at = @ai_settings.latest_ai_analysis_generated_at
+    @latest_ai_analysis_generated_at = parse_time(@ai_settings.latest_ai_analysis_generated_at)
   end
 
   def format_markdown(markdown)
     RedminePluginCheck::MarkdownFormatter.new(markdown).call
+  end
+
+  def parse_time(value)
+    return value if value.respond_to?(:strftime)
+    return nil if value.to_s.strip.empty?
+
+    Time.parse(value.to_s)
+  rescue ArgumentError
+    nil
   end
 
   def ai_error_message(result)

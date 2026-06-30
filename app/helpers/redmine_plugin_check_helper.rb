@@ -192,9 +192,25 @@ module RedminePluginCheckHelper
   end
 
   def plugin_check_inline_markdown(text)
-    escaped = ERB::Util.html_escape(text.to_s)
-    escaped = escaped.gsub(/`([^`]+)`/) { content_tag(:code, Regexp.last_match(1)) }
-    escaped.gsub(/\*\*([^*]+)\*\*/) { content_tag(:strong, Regexp.last_match(1)) }.html_safe
+    text.to_s.split(/(`[^`]*`)/).map do |part|
+      code = part.match(/\A`(.*)`\z/m)
+      if code
+        content_tag(:code, code[1]).to_s
+      else
+        plugin_check_inline_bold(part)
+      end
+    end.join.html_safe
+  end
+
+  def plugin_check_inline_bold(text)
+    text.to_s.split(/(\*\*[^*]+\*\*)/).map do |part|
+      bold = part.match(/\A\*\*([^*]+)\*\*\z/m)
+      if bold
+        content_tag(:strong, bold[1]).to_s
+      else
+        ERB::Util.html_escape(part).to_s
+      end
+    end.join
   end
 end
 

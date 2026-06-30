@@ -104,11 +104,24 @@
       <div class="plugin-check-ai-result-header">
         <h4><%= ai_analysis_label %></h4>
         <% if ai_analysis_saved_at.present? %>
-          <span class="plugin-check-ai-saved-at"><%= l(:text_ai_analysis_saved_at, :value => ai_analysis_saved_at) %></span>
+          <span class="plugin-check-ai-saved-at"><%= l(:text_ai_analysis_saved_at, :value => format_time(ai_analysis_saved_at)) %></span>
         <% end %>
         <%= form_tag plugin_check_ai_analysis_download_path, :method => :post, :class => 'plugin-check-ai-download-form' do %>
           <%= text_area_tag :content, ai_analysis_content, :class => 'plugin-check-ai-download-content' %>
           <%= submit_tag l(:label_download_ai_analysis_result), :name => nil, :class => 'icon icon-save' %>
+        <% end %>
+        <% if @target_version.present? && plugin_check_ai_analysis_available?(@ai_settings) %>
+          <%= form_tag plugin_check_ai_analysis_path, :method => :post, :class => 'plugin-check-ai-reanalyze-form' do %>
+            <%= hidden_field_tag :target_version, @target_version %>
+            <%= hidden_field_tag :status_filter, @status_filter %>
+            <%= hidden_field_tag :check_latest, '1' if @check_latest %>
+            <%= hidden_field_tag :show_details, '1' if @show_details %>
+            <%= submit_tag l(:button_ai_reanalyze), :name => nil, :class => 'icon icon-reload plugin-check-ai-reanalyze-submit' %>
+            <span class="plugin-check-ai-progress plugin-check-ai-reanalyze-progress" style="display:none;">
+              <span class="plugin-check-ai-spinner"></span>
+              <span><%= l(:text_ai_analysis_connecting) %></span>
+            </span>
+          <% end %>
         <% end %>
       </div>
       <div class="plugin-check-ai-preview">
@@ -233,19 +246,36 @@
 <script type="text/javascript">
 //<![CDATA[
 (function() {
-  var form = document.getElementById('plugin-check-ai-form');
-  if (!form) { return; }
-
-  form.onsubmit = function() {
-    var progress = document.getElementById('plugin-check-ai-progress');
-    var submit = document.getElementById('plugin-check-ai-submit');
+  function showAiProgress(form, submit, progress) {
     if (progress) { progress.style.display = 'inline-flex'; }
     if (submit) {
       submit.disabled = true;
       submit.value = '<%= j l(:text_ai_analysis_connecting) %>';
     }
     return true;
-  };
+  }
+
+  var form = document.getElementById('plugin-check-ai-form');
+  if (form) {
+    form.onsubmit = function() {
+      return showAiProgress(
+        form,
+        document.getElementById('plugin-check-ai-submit'),
+        document.getElementById('plugin-check-ai-progress')
+      );
+    };
+  }
+
+  var reanalyzeForms = document.getElementsByClassName('plugin-check-ai-reanalyze-form');
+  for (var i = 0; i < reanalyzeForms.length; i++) {
+    reanalyzeForms[i].onsubmit = function() {
+      return showAiProgress(
+        this,
+        this.getElementsByClassName('plugin-check-ai-reanalyze-submit')[0],
+        this.getElementsByClassName('plugin-check-ai-reanalyze-progress')[0]
+      );
+    };
+  }
 })();
 //]]>
 </script>

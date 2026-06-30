@@ -366,3 +366,9 @@
 .plugin-check-ai-download-content {
   display: none;
 }
+
+.plugin-check-ai-saved-at {
+  color: #66727f;
+  font-size: 90%;
+  margin-left: 10px;
+}

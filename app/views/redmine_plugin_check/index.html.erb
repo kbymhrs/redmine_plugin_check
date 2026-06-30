@@ -87,23 +87,36 @@
     <p class="plugin-check-ai-error"><%= l(:text_ai_analysis_target_version_required) %></p>
   <% end %>
 
-  <% if @ai_analysis_result %>
-    <% if @ai_analysis_result.success %>
-      <div class="plugin-check-ai-result plugin-check-ai-markdown">
-        <div class="plugin-check-ai-result-header">
-          <h4><%= l(:label_ai_analysis_result) %></h4>
-          <%= form_tag plugin_check_ai_analysis_download_path, :method => :post, :class => 'plugin-check-ai-download-form' do %>
-            <%= text_area_tag :content, @ai_analysis_result.content, :class => 'plugin-check-ai-download-content' %>
-            <%= submit_tag l(:label_download_ai_analysis_result), :name => nil, :class => 'icon icon-save' %>
-          <% end %>
-        </div>
-        <div class="plugin-check-ai-preview">
-          <%= plugin_check_markdown_preview(@ai_analysis_result.content) %>
-        </div>
+  <% ai_analysis_content = nil %>
+  <% ai_analysis_label = nil %>
+  <% ai_analysis_saved_at = nil %>
+  <% if @ai_analysis_result && @ai_analysis_result.success %>
+    <% ai_analysis_content = @ai_analysis_result.content %>
+    <% ai_analysis_label = l(:label_ai_analysis_result) %>
+  <% elsif @latest_ai_analysis_content.present? %>
+    <% ai_analysis_content = @latest_ai_analysis_content %>
+    <% ai_analysis_label = l(:label_latest_ai_analysis_result) %>
+    <% ai_analysis_saved_at = @latest_ai_analysis_generated_at %>
+  <% end %>
+
+  <% if ai_analysis_content.present? %>
+    <div class="plugin-check-ai-result plugin-check-ai-markdown">
+      <div class="plugin-check-ai-result-header">
+        <h4><%= ai_analysis_label %></h4>
+        <% if ai_analysis_saved_at.present? %>
+          <span class="plugin-check-ai-saved-at"><%= l(:text_ai_analysis_saved_at, :value => ai_analysis_saved_at) %></span>
+        <% end %>
+        <%= form_tag plugin_check_ai_analysis_download_path, :method => :post, :class => 'plugin-check-ai-download-form' do %>
+          <%= text_area_tag :content, ai_analysis_content, :class => 'plugin-check-ai-download-content' %>
+          <%= submit_tag l(:label_download_ai_analysis_result), :name => nil, :class => 'icon icon-save' %>
+        <% end %>
       </div>
-    <% else %>
-      <p class="plugin-check-ai-error"><%= plugin_check_ai_error_message(@ai_analysis_result) %></p>
-    <% end %>
+      <div class="plugin-check-ai-preview">
+        <%= plugin_check_markdown_preview(ai_analysis_content) %>
+      </div>
+    </div>
+  <% elsif @ai_analysis_result %>
+    <p class="plugin-check-ai-error"><%= plugin_check_ai_error_message(@ai_analysis_result) %></p>
   <% end %>
 </div>
 

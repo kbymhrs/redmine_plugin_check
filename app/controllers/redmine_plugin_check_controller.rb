@@ -34,6 +34,8 @@ class RedminePluginCheckController < ApplicationController
       @ai_analysis_target_version_missing = true
     else
       @ai_analysis_result = RedminePluginCheck::AiClient.new(@ai_settings).call(ai_markdown_export(@plugins))
+      normalize_ai_analysis_result
+      save_latest_ai_analysis_result
     end
 
     render :index
@@ -41,7 +43,7 @@ class RedminePluginCheckController < ApplicationController
 
 
   def ai_analysis_download
-    send_data params[:content].to_s,
+    send_data format_markdown(params[:content]),
               :filename => ai_analysis_filename,
               :type => 'text/markdown; charset=utf-8'
   end
@@ -82,6 +84,7 @@ class RedminePluginCheckController < ApplicationController
 
     @plugins = filtered_plugins(sorted_plugins(@report.plugins))
     @ai_settings = RedminePluginCheck::AiSettings.new
+    load_latest_ai_analysis_result
   end
 
   def normalize_status_filter(value)
@@ -170,6 +173,29 @@ class RedminePluginCheckController < ApplicationController
     RedminePluginCheck::AiMarkdownReport.new(@report, plugins).call
   end
 
+
+  def normalize_ai_analysis_result
+    return unless @ai_analysis_result && @ai_analysis_result.success
+
+    @ai_analysis_result.content = format_markdown(@ai_analysis_result.content)
+  end
+
+  def save_latest_ai_analysis_result
+    return unless @ai_analysis_result && @ai_analysis_result.success
+
+    RedminePluginCheck::AiSettings.save_latest_ai_analysis(@ai_analysis_result.content, Time.zone.now)
+    @latest_ai_analysis_content = @ai_analysis_result.content
+    @latest_ai_analysis_generated_at = Time.zone.now.strftime('%Y-%m-%d %H:%M:%S %z')
+  end
+
+  def load_latest_ai_analysis_result
+    @latest_ai_analysis_content = @ai_settings.latest_ai_analysis_content
+    @latest_ai_analysis_generated_at = @ai_settings.latest_ai_analysis_generated_at
+  end
+
+  def format_markdown(markdown)
+    RedminePluginCheck::MarkdownFormatter.new(markdown).call
+  end
 
   def ai_error_message(result)
     key = result && result.error ? result.error : :request_failed

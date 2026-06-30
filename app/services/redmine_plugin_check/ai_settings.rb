@@ -2,6 +2,8 @@ module RedminePluginCheck
   class AiSettings
     DEFAULT_SYSTEM_PROMPT_ENGLISH = 'You are an expert Redmine upgrade advisor. Analyze the plugin compatibility report and return concrete actions for the administrator.'.freeze
     DEFAULT_SYSTEM_PROMPT_JAPANESE = 'あなたは Redmine アップグレード支援の専門家です。プラグイン互換性レポートを分析し、管理者が実行すべき具体的な対応を日本語で返してください。'.freeze
+    LATEST_AI_ANALYSIS_CONTENT_KEY = 'latest_ai_analysis_content'.freeze
+    LATEST_AI_ANALYSIS_GENERATED_AT_KEY = 'latest_ai_analysis_generated_at'.freeze
 
     PROVIDER_PRESETS = {
       'custom' => {
@@ -64,6 +66,17 @@ module RedminePluginCheck
       PROVIDER_PRESETS[key.to_s] || PROVIDER_PRESETS['custom']
     end
 
+    def self.save_latest_ai_analysis(content, generated_at = Time.now)
+      return unless defined?(Setting) && Setting.respond_to?(:plugin_redmine_plugin_check=)
+
+      settings = {}
+      current = Setting.plugin_redmine_plugin_check if Setting.respond_to?(:plugin_redmine_plugin_check)
+      current.each { |key, value| settings[key.to_s] = value } if current.respond_to?(:each)
+      settings[LATEST_AI_ANALYSIS_CONTENT_KEY] = content.to_s
+      settings[LATEST_AI_ANALYSIS_GENERATED_AT_KEY] = generated_at.strftime('%Y-%m-%d %H:%M:%S %z')
+      Setting.plugin_redmine_plugin_check = settings
+    end
+
     def initialize(settings = nil, env = ENV, locale = nil)
       @settings = DEFAULTS.merge(normalize_settings(settings || plugin_settings))
       @env = env
@@ -123,6 +136,14 @@ module RedminePluginCheck
       return localized_default_system_prompt if default_system_prompt?(prompt)
 
       prompt
+    end
+
+    def latest_ai_analysis_content
+      value(LATEST_AI_ANALYSIS_CONTENT_KEY)
+    end
+
+    def latest_ai_analysis_generated_at
+      value(LATEST_AI_ANALYSIS_GENERATED_AT_KEY)
     end
 
     private

@@ -214,6 +214,7 @@ module RedminePluginCheck
       return 'Warning' if has_init_condition || has_migrations || has_gemfile
       return 'OK' if requires_result == true
       return 'Unknown' if requires_redmine.blank? && !has_init_condition
+      return 'OK' if target_version.blank? && requires_redmine.present?
 
       'Warning'
     end

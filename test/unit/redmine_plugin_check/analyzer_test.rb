@@ -124,4 +124,22 @@ class RedminePluginCheckAnalyzerTest < ActiveSupport::TestCase
       assert_includes plugin_report.primary_reasons, :requires_redmine_missing
     end
   end
+
+  test 'keeps lower-bound-only plugin ok when target version is blank' do
+    Dir.mktmpdir do |dir|
+      plugin_dir = File.join(dir, 'blank_target_plugin')
+      Dir.mkdir(plugin_dir)
+      File.write(File.join(plugin_dir, 'init.rb'), "Redmine::Plugin.register :blank_target_plugin do\nend\n")
+      plugin = FakePlugin.new(:blank_target_plugin, 'Blank Target Plugin', '1.0.0', 'ACME', plugin_dir, { :version_or_higher => '3.3.0' })
+
+      report = RedminePluginCheck::Analyzer.new(:target_version => '', :plugins => [plugin]).call
+      plugin_report = report.plugins.first
+
+      assert_equal 'OK', plugin_report.status
+      assert_nil plugin_report.requires_redmine_satisfied
+      assert plugin_report.requires_redmine_lower_bound_only
+      assert_empty plugin_report.primary_reasons
+      assert_includes plugin_report.notes, :target_version_missing
+    end
+  end
 end

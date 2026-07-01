@@ -54,6 +54,7 @@ ja:
   text_ai_analysis_saved_at: "保存日時: %{value}"
   text_ai_api_key_env_preferred: "API キーは環境変数の利用を推奨します。環境変数に値がある場合は画面設定より優先されます。"
   text_ai_analysis_disabled: "AI 分析は無効です。プラグイン設定で有効にしてください。"
+  text_ai_markdown_manual_analysis_hint: "ご利用中のAIに「AI 用 Markdown 出力」の結果を添付して聞くことも可能です。"
   text_ai_analysis_endpoint_missing: "AI API エンドポイントが未設定です。"
   text_ai_analysis_api_key_missing: "AI API キーが未設定です。環境変数またはプラグイン設定に設定してください。"
   label_show_detail_columns: "詳細列も表示する"

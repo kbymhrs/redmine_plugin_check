@@ -54,6 +54,7 @@ en:
   text_ai_analysis_saved_at: "Saved at: %{value}"
   text_ai_api_key_env_preferred: "Using an environment variable for the API key is recommended. When present, the environment variable takes precedence over this saved setting."
   text_ai_analysis_disabled: "AI analysis is disabled. Enable it in the plugin settings."
+  text_ai_markdown_manual_analysis_hint: "You can also attach the result of AI Markdown export to the AI service you already use."
   text_ai_analysis_endpoint_missing: "AI API endpoint is not configured."
   text_ai_analysis_api_key_missing: "AI API key is not configured. Set it in an environment variable or plugin settings."
   label_show_detail_columns: "Show detail columns"

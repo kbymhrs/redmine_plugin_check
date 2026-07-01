@@ -406,4 +406,10 @@
 
 .plugin-check-settings-footer-link .plugin-check-settings-button {
   margin-left: 0;
+  padding-left: 0;
+}
+
+.plugin-check-ai-manual-hint {
+  display: inline-block;
+  margin-top: 6px;
 }

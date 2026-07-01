@@ -183,6 +183,10 @@
       <%= link_to l(:label_plugin_check_settings),
                   plugin_settings_path(:id => 'redmine_plugin_check'),
                   :class => 'icon icon-settings plugin-check-settings-button' %>
+      <% if @ai_settings && !@ai_settings.enabled? %>
+        <br />
+        <span class="plugin-check-ai-manual-hint"><%= l(:text_ai_markdown_manual_analysis_hint) %></span>
+      <% end %>
     </p>
   <% end %>
 

@@ -418,3 +418,12 @@
   vertical-align: middle;
   cursor: pointer;
 }
+
+a.icon.plugin-check-settings-button {
+  background-image: none;
+  padding-left: 12px;
+}
+
+.plugin-check-settings-footer-link a.icon.plugin-check-settings-button {
+  padding-left: 0;
+}

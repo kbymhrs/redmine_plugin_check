@@ -58,81 +58,6 @@
   </p>
 <% end %>
 
-<div class="plugin-check-ai-panel">
-  <h3><%= l(:label_ai_analysis) %></h3>
-  <% if @target_version.blank? %>
-    <p class="plugin-check-ai-unavailable"><%= l(:text_ai_analysis_target_version_required) %></p>
-  <% elsif plugin_check_ai_analysis_available?(@ai_settings) %>
-    <%= form_tag plugin_check_ai_analysis_path, :method => :post, :class => 'plugin-check-ai-form', :id => 'plugin-check-ai-form' do %>
-      <%= hidden_field_tag :target_version, @target_version %>
-      <%= hidden_field_tag :status_filter, @status_filter %>
-      <%= hidden_field_tag :check_latest, '1' if @check_latest %>
-      <%= hidden_field_tag :show_details, '1' if @show_details %>
-      <%= submit_tag l(:button_ai_analyze), :name => nil, :class => 'icon icon-checked', :id => 'plugin-check-ai-submit' %>
-      <span class="plugin-check-ai-progress" id="plugin-check-ai-progress" style="display:none;">
-        <span class="plugin-check-ai-spinner"></span>
-        <span><%= l(:text_ai_analysis_connecting) %></span>
-      </span>
-    <% end %>
-  <% else %>
-    <p class="plugin-check-ai-unavailable">
-      <%= plugin_check_ai_unavailable_message(@ai_settings) %>
-      <%= link_to l(:label_plugin_check_settings),
-                  plugin_settings_path(:id => 'redmine_plugin_check'),
-                  :class => 'icon icon-settings' %>
-    </p>
-  <% end %>
-
-  <% if @ai_analysis_target_version_missing %>
-    <p class="plugin-check-ai-error"><%= l(:text_ai_analysis_target_version_required) %></p>
-  <% end %>
-
-  <% ai_analysis_content = nil %>
-  <% ai_analysis_label = nil %>
-  <% ai_analysis_saved_at = nil %>
-  <% if @ai_analysis_result && @ai_analysis_result.success %>
-    <% ai_analysis_content = @ai_analysis_result.content %>
-    <% ai_analysis_label = l(:label_ai_analysis_result) %>
-  <% elsif @latest_ai_analysis_content.present? %>
-    <% ai_analysis_content = @latest_ai_analysis_content %>
-    <% ai_analysis_label = l(:label_latest_ai_analysis_result) %>
-    <% ai_analysis_saved_at = @latest_ai_analysis_generated_at %>
-  <% end %>
-
-  <% if ai_analysis_content.present? %>
-    <div class="plugin-check-ai-result plugin-check-ai-markdown">
-      <div class="plugin-check-ai-result-header">
-        <h4><%= ai_analysis_label %></h4>
-        <% if ai_analysis_saved_at.present? %>
-          <span class="plugin-check-ai-saved-at"><%= l(:text_ai_analysis_saved_at, :value => format_time(ai_analysis_saved_at)) %></span>
-        <% end %>
-        <%= form_tag plugin_check_ai_analysis_download_path, :method => :post, :class => 'plugin-check-ai-download-form' do %>
-          <%= text_area_tag :content, ai_analysis_content, :class => 'plugin-check-ai-download-content' %>
-          <%= submit_tag l(:label_download_ai_analysis_result), :name => nil, :class => 'icon icon-save' %>
-        <% end %>
-        <% if @target_version.present? && plugin_check_ai_analysis_available?(@ai_settings) %>
-          <%= form_tag plugin_check_ai_analysis_path, :method => :post, :class => 'plugin-check-ai-reanalyze-form' do %>
-            <%= hidden_field_tag :target_version, @target_version %>
-            <%= hidden_field_tag :status_filter, @status_filter %>
-            <%= hidden_field_tag :check_latest, '1' if @check_latest %>
-            <%= hidden_field_tag :show_details, '1' if @show_details %>
-            <%= submit_tag l(:button_ai_reanalyze), :name => nil, :class => 'icon icon-reload plugin-check-ai-reanalyze-submit' %>
-            <span class="plugin-check-ai-progress plugin-check-ai-reanalyze-progress" style="display:none;">
-              <span class="plugin-check-ai-spinner"></span>
-              <span><%= l(:text_ai_analysis_connecting) %></span>
-            </span>
-          <% end %>
-        <% end %>
-      </div>
-      <div class="plugin-check-ai-preview">
-        <%= plugin_check_markdown_preview(ai_analysis_content) %>
-      </div>
-    </div>
-  <% elsif @ai_analysis_result %>
-    <p class="plugin-check-ai-error"><%= plugin_check_ai_error_message(@ai_analysis_result) %></p>
-  <% end %>
-</div>
-
 <div class="autoscroll plugin-check-table-shell<%= @plugins.size >= 5 ? ' plugin-check-table-shell-scroll' : '' %>">
   <table class="list plugin-check-plugins<%= @show_details ? ' plugin-check-plugins-detail' : ' plugin-check-plugins-summary' %>">
     <colgroup>
@@ -222,6 +147,80 @@
       <% end %>
     </tbody>
   </table>
+</div>
+
+<div class="plugin-check-ai-panel">
+  <% ai_analysis_content = nil %>
+  <% ai_analysis_label = nil %>
+  <% ai_analysis_saved_at = nil %>
+  <% if @ai_analysis_result && @ai_analysis_result.success %>
+    <% ai_analysis_content = @ai_analysis_result.content %>
+    <% ai_analysis_label = l(:label_ai_analysis_result) %>
+  <% elsif @latest_ai_analysis_content.present? %>
+    <% ai_analysis_content = @latest_ai_analysis_content %>
+    <% ai_analysis_label = l(:label_latest_ai_analysis_result) %>
+    <% ai_analysis_saved_at = @latest_ai_analysis_generated_at %>
+  <% end %>
+
+  <h3><%= l(:label_ai_analysis) %></h3>
+  <% if @target_version.blank? %>
+    <p class="plugin-check-ai-unavailable"><%= l(:text_ai_analysis_target_version_required) %></p>
+  <% elsif ai_analysis_content.blank? && plugin_check_ai_analysis_available?(@ai_settings) %>
+    <%= form_tag plugin_check_ai_analysis_path, :method => :post, :class => 'plugin-check-ai-form', :id => 'plugin-check-ai-form' do %>
+      <%= hidden_field_tag :target_version, @target_version %>
+      <%= hidden_field_tag :status_filter, @status_filter %>
+      <%= hidden_field_tag :check_latest, '1' if @check_latest %>
+      <%= hidden_field_tag :show_details, '1' if @show_details %>
+      <%= submit_tag l(:button_ai_analyze), :name => nil, :class => 'icon icon-checked', :id => 'plugin-check-ai-submit' %>
+      <span class="plugin-check-ai-progress" id="plugin-check-ai-progress" style="display:none;">
+        <span class="plugin-check-ai-spinner"></span>
+        <span><%= l(:text_ai_analysis_connecting) %></span>
+      </span>
+    <% end %>
+  <% elsif ai_analysis_content.blank? %>
+    <p class="plugin-check-ai-unavailable">
+      <%= plugin_check_ai_unavailable_message(@ai_settings) %>
+      <%= link_to l(:label_plugin_check_settings),
+                  plugin_settings_path(:id => 'redmine_plugin_check'),
+                  :class => 'icon icon-settings' %>
+    </p>
+  <% end %>
+
+  <% if @ai_analysis_target_version_missing %>
+    <p class="plugin-check-ai-error"><%= l(:text_ai_analysis_target_version_required) %></p>
+  <% end %>
+  <% if ai_analysis_content.present? %>
+    <div class="plugin-check-ai-result plugin-check-ai-markdown">
+      <div class="plugin-check-ai-result-header">
+        <h4><%= ai_analysis_label %></h4>
+        <% if ai_analysis_saved_at.present? %>
+          <span class="plugin-check-ai-saved-at"><%= l(:text_ai_analysis_saved_at, :value => format_time(ai_analysis_saved_at)) %></span>
+        <% end %>
+        <%= form_tag plugin_check_ai_analysis_download_path, :method => :post, :class => 'plugin-check-ai-download-form' do %>
+          <%= text_area_tag :content, ai_analysis_content, :class => 'plugin-check-ai-download-content' %>
+          <%= submit_tag l(:label_download_ai_analysis_result), :name => nil, :class => 'icon icon-save' %>
+        <% end %>
+        <% if @target_version.present? && plugin_check_ai_analysis_available?(@ai_settings) %>
+          <%= form_tag plugin_check_ai_analysis_path, :method => :post, :class => 'plugin-check-ai-reanalyze-form' do %>
+            <%= hidden_field_tag :target_version, @target_version %>
+            <%= hidden_field_tag :status_filter, @status_filter %>
+            <%= hidden_field_tag :check_latest, '1' if @check_latest %>
+            <%= hidden_field_tag :show_details, '1' if @show_details %>
+            <%= submit_tag l(:button_ai_reanalyze), :name => nil, :class => 'icon icon-reload plugin-check-ai-reanalyze-submit' %>
+            <span class="plugin-check-ai-progress plugin-check-ai-reanalyze-progress" style="display:none;">
+              <span class="plugin-check-ai-spinner"></span>
+              <span><%= l(:text_ai_analysis_connecting) %></span>
+            </span>
+          <% end %>
+        <% end %>
+      </div>
+      <div class="plugin-check-ai-preview">
+        <%= plugin_check_markdown_preview(ai_analysis_content) %>
+      </div>
+    </div>
+  <% elsif @ai_analysis_result %>
+    <p class="plugin-check-ai-error"><%= plugin_check_ai_error_message(@ai_analysis_result) %></p>
+  <% end %>
 </div>
 
 <div class="plugin-check-help">

@@ -27,6 +27,32 @@ class RedminePluginCheckAiSettingsTest < ActiveSupport::TestCase
     assert_equal 'saved-key', settings.api_key
   end
 
+  test 'uses preset specific api key before legacy api key' do
+    settings = RedminePluginCheck::AiSettings.new(
+      {
+        'ai_provider_preset' => 'gemini',
+        'ai_api_key' => 'legacy-key',
+        'ai_api_key_gemini' => 'gemini-key'
+      },
+      {}
+    )
+
+    assert_equal 'gemini-key', settings.api_key
+  end
+
+  test 'uses api key for selected provider only' do
+    settings = RedminePluginCheck::AiSettings.new(
+      {
+        'ai_provider_preset' => 'claude',
+        'ai_api_key_openai' => 'openai-key',
+        'ai_api_key_claude' => 'claude-key'
+      },
+      {}
+    )
+
+    assert_equal 'claude-key', settings.api_key
+  end
+
   test 'uses positive integer defaults for invalid numeric settings' do
     settings = RedminePluginCheck::AiSettings.new(
       {

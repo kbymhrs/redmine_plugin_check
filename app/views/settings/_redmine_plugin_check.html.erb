@@ -4,6 +4,16 @@
 <% ai_settings = RedminePluginCheck::AiSettings::DEFAULTS.merge(normalized_ai_settings) %>
 <% ai_settings_object = RedminePluginCheck::AiSettings.new(ai_settings) %>
 <% ai_provider_presets = RedminePluginCheck::AiSettings::PROVIDER_PRESETS %>
+<% ai_api_key_values = {} %>
+<% ai_api_key_field_ids = {} %>
+<% ai_provider_presets.keys.each do |preset_key| %>
+  <% setting_key = RedminePluginCheck::AiSettings.api_key_setting_key(preset_key) %>
+  <% saved_value = ai_settings[setting_key].to_s %>
+  <% saved_value = ai_settings['ai_api_key'].to_s if saved_value.blank? && preset_key == ai_settings_object.provider_preset %>
+  <% ai_api_key_values[preset_key] = saved_value %>
+  <% ai_api_key_field_ids[preset_key] = "settings_#{setting_key}" %>
+<% end %>
+
 
 <p>
   <label><%= l(:label_ai_analysis_enabled) %></label>
@@ -42,7 +52,11 @@
 
 <p>
   <label><%= l(:label_ai_api_key) %></label>
-  <%= password_field_tag 'settings[ai_api_key]', ai_settings['ai_api_key'], :size => 80, :autocomplete => 'off' %>
+  <% ai_api_key_values.each do |preset_key, api_key_value| %>
+    <%= hidden_field_tag "settings[#{RedminePluginCheck::AiSettings.api_key_setting_key(preset_key)}]", api_key_value, :id => ai_api_key_field_ids[preset_key] %>
+  <% end %>
+  <%= hidden_field_tag 'settings[ai_api_key]', ai_settings['ai_api_key'] %>
+  <%= password_field_tag 'settings_ai_api_key_visible', ai_api_key_values[ai_settings_object.provider_preset], :size => 80, :autocomplete => 'off', :id => 'settings_ai_api_key' %>
   <em class="info"><%= l(:text_ai_api_key_env_preferred) %></em>
 </p>
 
@@ -52,6 +66,7 @@
   <%= button_tag l(:button_ai_fetch_gemini_models), :type => 'button', :id => 'settings_ai_fetch_gemini_models', :class => 'icon icon-reload' %>
   <%= select_tag 'settings_ai_gemini_model_select', '', :id => 'settings_ai_gemini_model_select', :style => 'display:none' %>
   <em class="info" id="settings_ai_gemini_model_status"></em>
+  <em class="info" id="settings_ai_gemini_model_note"><%= l(:text_ai_fetch_gemini_models_saved_settings_required) %></em>
 </p>
 
 <p>
@@ -72,10 +87,15 @@
 //<![CDATA[
 (function() {
   var presets = <%= raw ai_provider_presets.to_json %>;
+  var apiKeyValues = <%= raw ai_api_key_values.to_json %>;
+  var apiKeyFieldIds = <%= raw ai_api_key_field_ids.to_json %>;
   var select = document.getElementById('settings_ai_provider_preset');
   var fetchGeminiModels = document.getElementById('settings_ai_fetch_gemini_models');
   var geminiModelSelect = document.getElementById('settings_ai_gemini_model_select');
   var geminiModelStatus = document.getElementById('settings_ai_gemini_model_status');
+  var geminiModelNote = document.getElementById('settings_ai_gemini_model_note');
+  var apiKeyField = document.getElementById('settings_ai_api_key');
+  var currentPreset = select ? select.value : null;
   var testConnection = document.getElementById('settings_ai_test_connection');
   var testConnectionProgress = document.getElementById('settings_ai_test_connection_progress');
   if (!select) { return; }
@@ -89,24 +109,51 @@
     return 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent';
   }
 
+  function saveCurrentApiKey() {
+  if (!apiKeyField || !currentPreset) { return; }
+  apiKeyValues[currentPreset] = apiKeyField.value;
+  var hidden = document.getElementById(apiKeyFieldIds[currentPreset]);
+  if (hidden) { hidden.value = apiKeyField.value; }
+}
+
+  function loadApiKeyForPreset(preset) {
+  if (apiKeyField) { apiKeyField.value = apiKeyValues[preset] || ''; }
+}
+
   function updateGeminiControls() {
-    var isGemini = select && select.value === 'gemini';
-    if (fetchGeminiModels) { fetchGeminiModels.style.display = isGemini ? '' : 'none'; }
-    if (!isGemini && geminiModelSelect) { geminiModelSelect.style.display = 'none'; }
-    if (!isGemini && geminiModelStatus) { geminiModelStatus.innerHTML = ''; }
-  }
+  var isGemini = select && select.value === 'gemini';
+  if (fetchGeminiModels) { fetchGeminiModels.style.display = isGemini ? '' : 'none'; }
+  if (geminiModelNote) { geminiModelNote.style.display = isGemini ? '' : 'none'; }
+  if (!isGemini && geminiModelSelect) { geminiModelSelect.style.display = 'none'; }
+  if (!isGemini && geminiModelStatus) { geminiModelStatus.innerHTML = ''; }
+}
 
   select.onchange = function() {
-    var preset = presets[select.value];
-    if (!preset || select.value === 'custom') { return; }
+  saveCurrentApiKey();
+  currentPreset = select.value;
+  loadApiKeyForPreset(currentPreset);
 
-    setValue('settings_ai_provider_label', preset.provider_label);
-    setValue('settings_ai_endpoint', preset.endpoint);
-    setValue('settings_ai_api_key_env', preset.api_key_env);
-    setValue('settings_ai_model', preset.model);
-    if (select.value === 'gemini') { setValue('settings_ai_endpoint', geminiEndpoint(preset.model)); }
+  var preset = presets[select.value];
+  if (!preset || select.value === 'custom') {
     updateGeminiControls();
+    return;
+  }
+
+  setValue('settings_ai_provider_label', preset.provider_label);
+  setValue('settings_ai_endpoint', preset.endpoint);
+  setValue('settings_ai_api_key_env', preset.api_key_env);
+  setValue('settings_ai_model', preset.model);
+  if (select.value === 'gemini') { setValue('settings_ai_endpoint', geminiEndpoint(preset.model)); }
+  updateGeminiControls();
+};
+
+  if (apiKeyField && apiKeyField.form) {
+  apiKeyField.form.onsubmit = function() {
+    saveCurrentApiKey();
+    return true;
   };
+}
+
 
   if (fetchGeminiModels) {
     fetchGeminiModels.onclick = function() {
@@ -153,3 +200,7 @@
 }());
 //]]>
 </script>
+
+<p class="plugin-check-settings-footer-link">
+  <%= link_to l(:label_back_to_plugin_check), plugin_check_path, :class => 'icon icon-link plugin-check-settings-button' %>
+</p>

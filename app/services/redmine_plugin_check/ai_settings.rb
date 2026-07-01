@@ -49,6 +49,11 @@ module RedminePluginCheck
       'ai_provider_label' => PROVIDER_PRESETS['openai']['provider_label'],
       'ai_endpoint' => PROVIDER_PRESETS['openai']['endpoint'],
       'ai_api_key' => '',
+      'ai_api_key_custom' => '',
+      'ai_api_key_openai' => '',
+      'ai_api_key_gemini' => '',
+      'ai_api_key_claude' => '',
+      'ai_api_key_azure_openai' => '',
       'ai_api_key_env' => 'REDMINE_PLUGIN_CHECK_AI_API_KEY',
       'ai_model' => PROVIDER_PRESETS['openai']['model'],
       'ai_timeout_seconds' => '60',
@@ -64,6 +69,11 @@ module RedminePluginCheck
 
     def self.provider_preset(key)
       PROVIDER_PRESETS[key.to_s] || PROVIDER_PRESETS['custom']
+    end
+
+    def self.api_key_setting_key(preset)
+      key = PROVIDER_PRESETS.key?(preset.to_s) ? preset.to_s : 'custom'
+      "ai_api_key_#{key}"
     end
 
     def self.save_latest_ai_analysis(content, generated_at = Time.now)
@@ -107,6 +117,9 @@ module RedminePluginCheck
     def api_key
       env_value = env_api_key
       return env_value if present?(env_value)
+
+      preset_value = value(self.class.api_key_setting_key(provider_preset))
+      return preset_value if present?(preset_value)
 
       value('ai_api_key')
     end

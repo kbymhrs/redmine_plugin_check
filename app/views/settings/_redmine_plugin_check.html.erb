@@ -201,6 +201,37 @@
 //]]>
 </script>
 
-<p class="plugin-check-settings-footer-link">
+<p class="plugin-check-settings-footer-link" id="plugin-check-settings-footer-link">
   <%= link_to l(:label_back_to_plugin_check), plugin_check_path, :class => 'icon icon-link plugin-check-settings-button' %>
 </p>
+
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+  function movePluginCheckFooterLink() {
+    var footer = document.getElementById('plugin-check-settings-footer-link');
+    if (!footer) { return; }
+
+    var node = footer;
+    while (node && node.tagName && node.tagName.toLowerCase() !== 'form') {
+      node = node.parentNode;
+    }
+    if (!node) { return; }
+
+    var inputs = node.getElementsByTagName('input');
+    for (var i = 0; i < inputs.length; i++) {
+      if (inputs[i].type === 'submit') {
+        inputs[i].parentNode.insertBefore(footer, inputs[i].nextSibling);
+        break;
+      }
+    }
+  }
+
+  if (window.addEventListener) {
+    window.addEventListener('load', movePluginCheckFooterLink, false);
+  } else if (window.attachEvent) {
+    window.attachEvent('onload', movePluginCheckFooterLink);
+  }
+}());
+//]]>
+</script>

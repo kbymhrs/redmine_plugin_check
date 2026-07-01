@@ -164,7 +164,7 @@
 
   <h3><%= l(:label_ai_analysis) %></h3>
   <% if @target_version.blank? %>
-    <p class="plugin-check-ai-unavailable"><%= l(:text_ai_analysis_target_version_required) %></p>
+    <p class="plugin-check-ai-unavailable"><%= raw l(:text_ai_analysis_target_version_required) %></p>
   <% elsif ai_analysis_content.blank? && plugin_check_ai_analysis_available?(@ai_settings) %>
     <%= form_tag plugin_check_ai_analysis_path, :method => :post, :class => 'plugin-check-ai-form', :id => 'plugin-check-ai-form' do %>
       <%= hidden_field_tag :target_version, @target_version %>
@@ -187,7 +187,7 @@
   <% end %>
 
   <% if @ai_analysis_target_version_missing %>
-    <p class="plugin-check-ai-error"><%= l(:text_ai_analysis_target_version_required) %></p>
+    <p class="plugin-check-ai-error"><%= raw l(:text_ai_analysis_target_version_required) %></p>
   <% end %>
   <% if ai_analysis_content.present? %>
     <div class="plugin-check-ai-result plugin-check-ai-markdown">

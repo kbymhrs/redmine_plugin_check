@@ -380,10 +380,11 @@
 .plugin-check-settings-button {
   display: inline-block;
   margin-left: 10px;
-  padding: 4px 10px 4px 22px;
+  padding: 4px 12px;
   border: 1px solid #b8c6d1;
   border-radius: 3px;
   background-color: #f7f9fb;
+  background-image: none;
   color: #2b5f8a;
   font-weight: bold;
   text-decoration: none;
@@ -398,5 +399,11 @@
 }
 
 .plugin-check-settings-footer-link {
-  margin-top: 14px;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.plugin-check-settings-footer-link .plugin-check-settings-button {
+  margin-left: 0;
 }

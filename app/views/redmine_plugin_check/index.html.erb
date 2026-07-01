@@ -42,7 +42,7 @@
       <%= check_box_tag :show_details, '1', @show_details %>
       <%= label_tag :show_details, l(:label_show_detail_columns) %>
     </span>
-    <%= submit_tag l(:button_apply), :name => nil %>
+    <%= submit_tag l(:button_apply), :name => nil, :class => 'plugin-check-settings-button plugin-check-apply-button' %>
     <% csv_params = { :target_version => @target_version, :status_filter => @status_filter, :format => :csv } %>
     <% csv_params[:check_latest] = '1' if @check_latest %>
     <% csv_params[:show_details] = '1' if @show_details %>

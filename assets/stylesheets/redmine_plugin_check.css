@@ -413,3 +413,8 @@
   display: inline-block;
   margin-top: 6px;
 }
+
+.plugin-check-apply-button {
+  vertical-align: middle;
+  cursor: pointer;
+}

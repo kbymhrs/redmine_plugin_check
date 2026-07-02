@@ -29,7 +29,11 @@
 <%= form_tag plugin_check_path, :method => :get, :class => 'plugin-check-form' do %>
   <p>
     <%= label_tag :target_version, l(:label_target_redmine_version) %>
-    <%= text_field_tag :target_version, @target_version, :size => 16, :placeholder => '6.0.0' %>
+    <% if @target_version_options.present? %>
+      <%= select_tag :target_version, options_for_select(@target_version_options, @target_version), :include_blank => true %>
+    <% else %>
+      <%= text_field_tag :target_version, @target_version, :size => 16, :placeholder => '6.0.0' %>
+    <% end %>
     <span class="plugin-check-form-option">
       <%= label_tag :status_filter, l(:label_status_filter) %>
       <%= select_tag :status_filter, options_for_select(plugin_check_status_filter_options, @status_filter) %>

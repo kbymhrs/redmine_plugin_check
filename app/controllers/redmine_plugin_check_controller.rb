@@ -85,6 +85,7 @@ class RedminePluginCheckController < ApplicationController
     ).call
 
     @plugins = filtered_plugins(sorted_plugins(@report.plugins))
+    @target_version_options = request.format.html? ? RedminePluginCheck::TargetVersionCatalog.new.versions_for(@report.redmine_version) : []
     @ai_settings = RedminePluginCheck::AiSettings.new
     load_latest_ai_analysis_result
   end

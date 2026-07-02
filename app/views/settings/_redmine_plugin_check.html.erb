@@ -14,6 +14,17 @@
   <% ai_api_key_field_ids[preset_key] = "settings_#{setting_key}" %>
 <% end %>
 
+<% ai_model_values = {} %>
+<% ai_model_field_ids = {} %>
+<% ai_provider_presets.keys.each do |preset_key| %>
+  <% setting_key = RedminePluginCheck::AiSettings.model_setting_key(preset_key) %>
+  <% saved_value = normalized_ai_settings[setting_key].to_s %>
+  <% saved_value = normalized_ai_settings['ai_model'].to_s if saved_value.blank? && preset_key == ai_settings_object.provider_preset %>
+  <% saved_value = ai_provider_presets[preset_key]['model'].to_s if saved_value.blank? %>
+  <% ai_model_values[preset_key] = saved_value %>
+  <% ai_model_field_ids[preset_key] = "settings_#{setting_key}" %>
+<% end %>
+
 
 <p>
   <label><%= l(:label_ai_analysis_enabled) %></label>
@@ -62,7 +73,11 @@
 
 <p>
   <label><%= l(:label_ai_model) %></label>
-  <%= text_field_tag 'settings[ai_model]', ai_settings['ai_model'], :size => 40, :id => 'settings_ai_model' %>
+  <% ai_model_values.each do |preset_key, model_value| %>
+    <%= hidden_field_tag "settings[#{RedminePluginCheck::AiSettings.model_setting_key(preset_key)}]", model_value, :id => ai_model_field_ids[preset_key] %>
+  <% end %>
+  <%= hidden_field_tag 'settings[ai_model]', ai_settings['ai_model'] %>
+  <%= text_field_tag 'settings_ai_model_visible', ai_model_values[ai_settings_object.provider_preset], :size => 40, :id => 'settings_ai_model' %>
   <%= button_tag l(:button_ai_fetch_models), :type => 'button', :id => 'settings_ai_fetch_models', :class => 'icon icon-reload' %>
   <%= select_tag 'settings_ai_model_select', '', :id => 'settings_ai_model_select', :style => 'display:none' %>
   <em class="info" id="settings_ai_model_status"></em>
@@ -89,6 +104,8 @@
   var presets = <%= raw ai_provider_presets.to_json %>;
   var apiKeyValues = <%= raw ai_api_key_values.to_json %>;
   var apiKeyFieldIds = <%= raw ai_api_key_field_ids.to_json %>;
+  var modelValues = <%= raw ai_model_values.to_json %>;
+  var modelFieldIds = <%= raw ai_model_field_ids.to_json %>;
   var select = document.getElementById('settings_ai_provider_preset');
   var fetchModels = document.getElementById('settings_ai_fetch_models');
   var modelSelect = document.getElementById('settings_ai_model_select');
@@ -120,6 +137,27 @@ function loadApiKeyForPreset(preset) {
   if (apiKeyField) { apiKeyField.value = apiKeyValues[preset] || ''; }
 }
 
+function saveCurrentModel() {
+  var modelField = document.getElementById('settings_ai_model');
+  if (!modelField || !currentPreset) { return; }
+
+  modelValues[currentPreset] = modelField.value;
+  var hidden = document.getElementById(modelFieldIds[currentPreset]);
+  if (hidden) { hidden.value = modelField.value; }
+}
+
+function loadModelForPreset(preset) {
+  var modelField = document.getElementById('settings_ai_model');
+  if (!modelField) { return; }
+
+  modelField.value = modelValues[preset] || (presets[preset] ? presets[preset].model : '');
+}
+
+function currentModelValue() {
+  var modelField = document.getElementById('settings_ai_model');
+  return modelField ? modelField.value : '';
+}
+
 function updateModelControls() {
   var supportsModels = select && (select.value === 'openai' || select.value === 'gemini' || select.value === 'claude');
   if (fetchModels) { fetchModels.style.display = supportsModels ? '' : 'none'; }
@@ -130,8 +168,10 @@ function updateModelControls() {
 
 select.onchange = function() {
   saveCurrentApiKey();
+  saveCurrentModel();
   currentPreset = select.value;
   loadApiKeyForPreset(currentPreset);
+  loadModelForPreset(currentPreset);
 
   var preset = presets[select.value];
   if (!preset || select.value === 'custom') {
@@ -142,14 +182,14 @@ select.onchange = function() {
   setValue('settings_ai_provider_label', preset.provider_label);
   setValue('settings_ai_endpoint', preset.endpoint);
   setValue('settings_ai_api_key_env', preset.api_key_env);
-  setValue('settings_ai_model', preset.model);
-  if (select.value === 'gemini') { setValue('settings_ai_endpoint', geminiEndpoint(preset.model)); }
+  if (select.value === 'gemini') { setValue('settings_ai_endpoint', geminiEndpoint(currentModelValue())); }
   updateModelControls();
 };
 
 if (apiKeyField && apiKeyField.form) {
   apiKeyField.form.onsubmit = function() {
     saveCurrentApiKey();
+    saveCurrentModel();
     return true;
   };
 }
@@ -183,7 +223,8 @@ if (apiKeyField && apiKeyField.form) {
   if (modelSelect) {
     modelSelect.onchange = function() {
       setValue('settings_ai_model', modelSelect.value);
-      setValue('settings_ai_endpoint', geminiEndpoint(modelSelect.value));
+      saveCurrentModel();
+      if (select.value === 'gemini') { setValue('settings_ai_endpoint', geminiEndpoint(modelSelect.value)); }
     };
   }
 

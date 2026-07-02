@@ -56,6 +56,11 @@ module RedminePluginCheck
       'ai_api_key_azure_openai' => '',
       'ai_api_key_env' => 'REDMINE_PLUGIN_CHECK_AI_API_KEY',
       'ai_model' => PROVIDER_PRESETS['openai']['model'],
+      'ai_model_custom' => PROVIDER_PRESETS['custom']['model'],
+      'ai_model_openai' => PROVIDER_PRESETS['openai']['model'],
+      'ai_model_gemini' => PROVIDER_PRESETS['gemini']['model'],
+      'ai_model_claude' => PROVIDER_PRESETS['claude']['model'],
+      'ai_model_azure_openai' => PROVIDER_PRESETS['azure_openai']['model'],
       'ai_timeout_seconds' => '60',
       'ai_max_prompt_characters' => '30000',
       'ai_system_prompt' => ''
@@ -76,6 +81,11 @@ module RedminePluginCheck
       "ai_api_key_#{key}"
     end
 
+    def self.model_setting_key(preset)
+      key = PROVIDER_PRESETS.key?(preset.to_s) ? preset.to_s : 'custom'
+      "ai_model_#{key}"
+    end
+
     def self.save_latest_ai_analysis(content, generated_at = Time.now)
       return unless defined?(Setting) && Setting.respond_to?(:plugin_redmine_plugin_check=)
 
@@ -88,7 +98,8 @@ module RedminePluginCheck
     end
 
     def initialize(settings = nil, env = ENV, locale = nil)
-      @settings = DEFAULTS.merge(normalize_settings(settings || plugin_settings))
+      @saved_settings = normalize_settings(settings || plugin_settings)
+      @settings = DEFAULTS.merge(saved_settings)
       @env = env
       @locale = locale
     end
@@ -133,7 +144,14 @@ module RedminePluginCheck
     end
 
     def model
-      value('ai_model')
+      preset_key = self.class.model_setting_key(provider_preset)
+      preset_value = saved_settings[preset_key].to_s.strip
+      return preset_value if present?(preset_value)
+
+      legacy_value = saved_settings['ai_model'].to_s.strip
+      return legacy_value if present?(legacy_value)
+
+      value(preset_key)
     end
 
     def timeout_seconds
@@ -161,7 +179,7 @@ module RedminePluginCheck
 
     private
 
-    attr_reader :settings, :env, :locale
+    attr_reader :settings, :saved_settings, :env, :locale
 
     def plugin_settings
       if defined?(Setting) && Setting.respond_to?(:plugin_redmine_plugin_check)

@@ -53,6 +53,32 @@ class RedminePluginCheckAiSettingsTest < ActiveSupport::TestCase
     assert_equal 'claude-key', settings.api_key
   end
 
+  test 'uses model for selected provider only' do
+    settings = RedminePluginCheck::AiSettings.new(
+      {
+        'ai_provider_preset' => 'openai',
+        'ai_model' => 'legacy-model',
+        'ai_model_openai' => 'gpt-4.1-mini',
+        'ai_model_gemini' => 'gemini-2.5-flash'
+      },
+      {}
+    )
+
+    assert_equal 'gpt-4.1-mini', settings.model
+  end
+
+  test 'falls back to legacy model for selected provider' do
+    settings = RedminePluginCheck::AiSettings.new(
+      {
+        'ai_provider_preset' => 'gemini',
+        'ai_model' => 'gemini-2.5-flash'
+      },
+      {}
+    )
+
+    assert_equal 'gemini-2.5-flash', settings.model
+  end
+
   test 'uses positive integer defaults for invalid numeric settings' do
     settings = RedminePluginCheck::AiSettings.new(
       {

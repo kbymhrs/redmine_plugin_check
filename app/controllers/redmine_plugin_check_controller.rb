@@ -50,7 +50,7 @@ class RedminePluginCheckController < ApplicationController
               :type => 'text/markdown; charset=utf-8'
   end
 
-  def gemini_models
+  def ai_models
     settings = RedminePluginCheck::AiSettings.new
     result = RedminePluginCheck::AiClient.new(settings).available_models
 

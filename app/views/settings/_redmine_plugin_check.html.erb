@@ -63,10 +63,10 @@
 <p>
   <label><%= l(:label_ai_model) %></label>
   <%= text_field_tag 'settings[ai_model]', ai_settings['ai_model'], :size => 40, :id => 'settings_ai_model' %>
-  <%= button_tag l(:button_ai_fetch_gemini_models), :type => 'button', :id => 'settings_ai_fetch_gemini_models', :class => 'icon icon-reload' %>
-  <%= select_tag 'settings_ai_gemini_model_select', '', :id => 'settings_ai_gemini_model_select', :style => 'display:none' %>
-  <em class="info" id="settings_ai_gemini_model_status"></em>
-  <em class="info" id="settings_ai_gemini_model_note"><%= l(:text_ai_fetch_gemini_models_saved_settings_required) %></em>
+  <%= button_tag l(:button_ai_fetch_models), :type => 'button', :id => 'settings_ai_fetch_models', :class => 'icon icon-reload' %>
+  <%= select_tag 'settings_ai_model_select', '', :id => 'settings_ai_model_select', :style => 'display:none' %>
+  <em class="info" id="settings_ai_model_status"></em>
+  <em class="info" id="settings_ai_model_note"><%= l(:text_ai_fetch_models_saved_settings_required) %></em>
 </p>
 
 <p>
@@ -90,10 +90,10 @@
   var apiKeyValues = <%= raw ai_api_key_values.to_json %>;
   var apiKeyFieldIds = <%= raw ai_api_key_field_ids.to_json %>;
   var select = document.getElementById('settings_ai_provider_preset');
-  var fetchGeminiModels = document.getElementById('settings_ai_fetch_gemini_models');
-  var geminiModelSelect = document.getElementById('settings_ai_gemini_model_select');
-  var geminiModelStatus = document.getElementById('settings_ai_gemini_model_status');
-  var geminiModelNote = document.getElementById('settings_ai_gemini_model_note');
+  var fetchModels = document.getElementById('settings_ai_fetch_models');
+  var modelSelect = document.getElementById('settings_ai_model_select');
+  var modelStatus = document.getElementById('settings_ai_model_status');
+  var modelNote = document.getElementById('settings_ai_model_note');
   var apiKeyField = document.getElementById('settings_ai_api_key');
   var currentPreset = select ? select.value : null;
   var testConnection = document.getElementById('settings_ai_test_connection');
@@ -109,33 +109,33 @@
     return 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent';
   }
 
-  function saveCurrentApiKey() {
+function saveCurrentApiKey() {
   if (!apiKeyField || !currentPreset) { return; }
   apiKeyValues[currentPreset] = apiKeyField.value;
   var hidden = document.getElementById(apiKeyFieldIds[currentPreset]);
   if (hidden) { hidden.value = apiKeyField.value; }
 }
 
-  function loadApiKeyForPreset(preset) {
+function loadApiKeyForPreset(preset) {
   if (apiKeyField) { apiKeyField.value = apiKeyValues[preset] || ''; }
 }
 
-  function updateGeminiControls() {
-  var isGemini = select && select.value === 'gemini';
-  if (fetchGeminiModels) { fetchGeminiModels.style.display = isGemini ? '' : 'none'; }
-  if (geminiModelNote) { geminiModelNote.style.display = isGemini ? '' : 'none'; }
-  if (!isGemini && geminiModelSelect) { geminiModelSelect.style.display = 'none'; }
-  if (!isGemini && geminiModelStatus) { geminiModelStatus.innerHTML = ''; }
+function updateModelControls() {
+  var supportsModels = select && (select.value === 'openai' || select.value === 'gemini' || select.value === 'claude');
+  if (fetchModels) { fetchModels.style.display = supportsModels ? '' : 'none'; }
+  if (modelNote) { modelNote.style.display = supportsModels ? '' : 'none'; }
+  if (!supportsModels && modelSelect) { modelSelect.style.display = 'none'; }
+  if (!supportsModels && modelStatus) { modelStatus.innerHTML = ''; }
 }
 
-  select.onchange = function() {
+select.onchange = function() {
   saveCurrentApiKey();
   currentPreset = select.value;
   loadApiKeyForPreset(currentPreset);
 
   var preset = presets[select.value];
   if (!preset || select.value === 'custom') {
-    updateGeminiControls();
+    updateModelControls();
     return;
   }
 
@@ -144,10 +144,10 @@
   setValue('settings_ai_api_key_env', preset.api_key_env);
   setValue('settings_ai_model', preset.model);
   if (select.value === 'gemini') { setValue('settings_ai_endpoint', geminiEndpoint(preset.model)); }
-  updateGeminiControls();
+  updateModelControls();
 };
 
-  if (apiKeyField && apiKeyField.form) {
+if (apiKeyField && apiKeyField.form) {
   apiKeyField.form.onsubmit = function() {
     saveCurrentApiKey();
     return true;
@@ -155,35 +155,35 @@
 }
 
 
-  if (fetchGeminiModels) {
-    fetchGeminiModels.onclick = function() {
-      if (!geminiModelStatus || !geminiModelSelect) { return; }
-      geminiModelStatus.innerHTML = '<%= j l(:text_ai_fetching_gemini_models) %>';
-      fetch('<%= plugin_check_gemini_models_path %>', { credentials: 'same-origin' })
+  if (fetchModels) {
+    fetchModels.onclick = function() {
+      if (!modelStatus || !modelSelect) { return; }
+      modelStatus.innerHTML = '<%= j l(:text_ai_fetching_models) %>';
+      fetch('<%= plugin_check_ai_models_path %>', { credentials: 'same-origin' })
         .then(function(response) { return response.json().then(function(data) { return { ok: response.ok, data: data }; }); })
         .then(function(result) {
-          if (!result.ok || !result.data.success) { throw new Error(result.data.message || '<%= j l(:text_ai_gemini_models_fetch_failed) %>'); }
-          geminiModelSelect.innerHTML = '';
+          if (!result.ok || !result.data.success) { throw new Error(result.data.message || '<%= j l(:text_ai_models_fetch_failed) %>'); }
+          modelSelect.innerHTML = '';
           result.data.models.forEach(function(model) {
             var option = document.createElement('option');
             option.value = model;
             option.text = model;
-            geminiModelSelect.appendChild(option);
+            modelSelect.appendChild(option);
           });
-          geminiModelSelect.style.display = '';
-          geminiModelStatus.innerHTML = '<%= j l(:text_ai_select_gemini_model) %>';
+          modelSelect.style.display = '';
+          modelStatus.innerHTML = '<%= j l(:text_ai_select_model) %>';
         })
         .catch(function(error) {
-          geminiModelSelect.style.display = 'none';
-          geminiModelStatus.innerHTML = error.message;
+          modelSelect.style.display = 'none';
+          modelStatus.innerHTML = error.message;
         });
     };
   }
 
-  if (geminiModelSelect) {
-    geminiModelSelect.onchange = function() {
-      setValue('settings_ai_model', geminiModelSelect.value);
-      setValue('settings_ai_endpoint', geminiEndpoint(geminiModelSelect.value));
+  if (modelSelect) {
+    modelSelect.onchange = function() {
+      setValue('settings_ai_model', modelSelect.value);
+      setValue('settings_ai_endpoint', geminiEndpoint(modelSelect.value));
     };
   }
 
@@ -196,7 +196,7 @@
     };
   }
 
-  updateGeminiControls();
+  updateModelControls();
 }());
 //]]>
 </script>

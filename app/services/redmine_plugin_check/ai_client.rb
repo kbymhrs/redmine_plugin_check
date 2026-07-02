@@ -11,6 +11,7 @@ module RedminePluginCheck
     USER_AGENT = 'RedminePluginCheck/0.1.1'.freeze
     TEST_PROMPT = 'Reply with OK only.'.freeze
     GEMINI_MODELS_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models'.freeze
+    CLAUDE_MODELS_ENDPOINT = 'https://api.anthropic.com/v1/models'.freeze
 
     def initialize(settings)
       @settings = settings
@@ -22,7 +23,7 @@ module RedminePluginCheck
       return Result.new(false, nil, :api_key_missing, nil) unless settings.api_key_present?
       return Result.new(false, nil, :model_missing, nil) unless present?(settings.model)
 
-      response = post_json(URI.parse(settings.endpoint), request_payload(markdown))
+      response = post_json(api_uri, request_payload(markdown))
       status_code = response.code.to_i
       return Result.new(false, nil, :http_error, status_code) unless status_code >= 200 && status_code < 300
 
@@ -48,12 +49,13 @@ module RedminePluginCheck
 
     def available_models
       return Result.new(false, nil, :api_key_missing, nil) unless settings.api_key_present?
+      return Result.new(false, nil, :unsupported_provider, nil) unless model_list_supported?
 
-      response = get_json(URI.parse(GEMINI_MODELS_ENDPOINT))
+      response = get_json(model_list_uri)
       status_code = response.code.to_i
       return Result.new(false, nil, :http_error, status_code) unless status_code >= 200 && status_code < 300
 
-      models = extract_gemini_models(response.body)
+      models = extract_models(response.body)
       return Result.new(false, nil, :response_format_error, status_code) if models.empty?
 
       Result.new(true, models, nil, status_code)
@@ -63,6 +65,8 @@ module RedminePluginCheck
       Result.new(false, nil, :request_timeout, nil)
     rescue OpenSSL::SSL::SSLError
       Result.new(false, nil, :ssl_error, nil)
+    rescue URI::InvalidURIError
+      Result.new(false, nil, :endpoint_invalid, nil)
     rescue StandardError
       Result.new(false, nil, :request_failed, nil)
     end
@@ -230,6 +234,63 @@ module RedminePluginCheck
       else
         request['Authorization'] = "Bearer #{settings.api_key}"
       end
+    end
+
+    def api_uri
+      uri = URI.parse(settings.endpoint)
+      return uri unless %w[openai azure_openai custom].include?(settings.provider_preset)
+
+      path = uri.path.to_s.sub(%r{/+\z}, '')
+      return uri unless path =~ %r{/v\d+\z}
+
+      uri.path = path + '/chat/completions'
+      uri
+    end
+
+    def model_list_supported?
+      %w[openai gemini claude].include?(settings.provider_preset)
+    end
+
+    def model_list_uri
+      case settings.provider_preset
+      when 'gemini'
+        URI.parse(GEMINI_MODELS_ENDPOINT)
+      when 'claude'
+        URI.parse(CLAUDE_MODELS_ENDPOINT)
+      else
+        openai_models_uri
+      end
+    end
+
+    def openai_models_uri
+      uri = URI.parse(settings.endpoint)
+      path = uri.path.to_s.sub(%r{/+\z}, '')
+      path = path.sub(%r{/chat/completions\z}, '')
+      path = '/v1' if path.empty?
+      uri.path = path + '/models'
+      uri.query = nil
+      uri
+    end
+
+    def extract_models(body)
+      case settings.provider_preset
+      when 'gemini'
+        extract_gemini_models(body)
+      when 'claude'
+        extract_data_models(body, 'id')
+      else
+        extract_data_models(body, 'id')
+      end
+    end
+
+    def extract_data_models(body, key)
+      data = JSON.parse(body.to_s)
+      models = data['data']
+      return [] unless models.is_a?(Array)
+
+      models.map do |model|
+        model.is_a?(Hash) ? model[key].to_s : nil
+      end.compact.reject(&:empty?).sort
     end
 
     def present?(value)

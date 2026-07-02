@@ -126,6 +126,56 @@ class RedminePluginCheckAiClientTest < ActiveSupport::TestCase
     assert result.success
     assert_equal ['gemini-1.5-flash'], result.content
   end
+test 'fetches openai models' do
+  requested_uris = []
+  client = RedminePluginCheck::AiClient.new(ai_settings('ai_provider_preset' => 'openai', 'ai_endpoint' => 'https://api.openai.com/v1/chat/completions'))
+  client.define_singleton_method(:get_json) do |uri|
+    requested_uris << uri.to_s
+    FakeResponse.new('200', JSON.generate('data' => [
+      { 'id' => 'gpt-4.1-mini' },
+      { 'id' => 'gpt-4o-mini' }
+    ]))
+  end
+
+  result = client.available_models
+
+  assert result.success
+  assert_equal 'https://api.openai.com/v1/models', requested_uris.first
+  assert_equal ['gpt-4.1-mini', 'gpt-4o-mini'], result.content
+end
+
+test 'fetches claude models' do
+  requested_uris = []
+  client = RedminePluginCheck::AiClient.new(ai_settings('ai_provider_preset' => 'claude'))
+  client.define_singleton_method(:get_json) do |uri|
+    requested_uris << uri.to_s
+    FakeResponse.new('200', JSON.generate('data' => [
+      { 'id' => 'claude-3-5-haiku-latest' },
+      { 'id' => 'claude-sonnet-4-20250514' }
+    ]))
+  end
+
+  result = client.available_models
+
+  assert result.success
+  assert_equal 'https://api.anthropic.com/v1/models', requested_uris.first
+  assert_equal ['claude-3-5-haiku-latest', 'claude-sonnet-4-20250514'], result.content
+end
+
+test 'appends chat completions path for v1 endpoint' do
+  requested_uris = []
+  client = RedminePluginCheck::AiClient.new(ai_settings('ai_provider_preset' => 'azure_openai', 'ai_endpoint' => 'https://example.openai.azure.com/openai/v1'))
+  client.define_singleton_method(:post_json) do |uri, _body|
+    requested_uris << uri.to_s
+    FakeResponse.new('200', JSON.generate('choices' => [{ 'message' => { 'content' => 'OK' } }]))
+  end
+
+  result = client.call('plugin report')
+
+  assert result.success
+  assert_equal 'https://example.openai.azure.com/openai/v1/chat/completions', requested_uris.first
+end
+
   private
 
   def ai_settings(overrides = {})

@@ -37,7 +37,7 @@ module RedminePluginCheck
       'azure_openai' => {
         'label' => 'Azure OpenAI',
         'provider_label' => 'Azure OpenAI',
-        'endpoint' => 'https://YOUR_RESOURCE.openai.azure.com/openai/deployments/YOUR_DEPLOYMENT/chat/completions?api-version=2024-02-15-preview',
+        'endpoint' => 'https://YOUR_RESOURCE.openai.azure.com/openai/v1',
         'api_key_env' => 'REDMINE_PLUGIN_CHECK_AZURE_OPENAI_API_KEY',
         'model' => 'YOUR_DEPLOYMENT'
       }

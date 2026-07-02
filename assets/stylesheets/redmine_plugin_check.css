@@ -427,3 +427,8 @@ a.icon.plugin-check-settings-button {
 .plugin-check-settings-footer-link a.icon.plugin-check-settings-button {
   padding-left: 0;
 }
+
+.plugin-check-target-version-empty {
+  background-color: #fff4bf;
+  border-color: #d6a400;
+}

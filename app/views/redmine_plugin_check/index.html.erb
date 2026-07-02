@@ -30,7 +30,7 @@
   <p>
     <%= label_tag :target_version, l(:label_target_redmine_version) %>
     <% if @target_version_options.present? %>
-      <%= select_tag :target_version, options_for_select(@target_version_options, @target_version), :include_blank => true %>
+      <%= select_tag :target_version, options_for_select(@target_version_options, @target_version), :include_blank => true, :class => (@target_version.blank? ? 'plugin-check-target-version-empty' : nil) %>
     <% else %>
       <%= text_field_tag :target_version, @target_version, :size => 16, :placeholder => '6.0.0' %>
     <% end %>
@@ -167,7 +167,16 @@
   <% end %>
 
   <h3><%= l(:label_ai_analysis) %></h3>
-  <% if @target_version.blank? %>
+  <% if ai_analysis_content.blank? && @ai_settings && !@ai_settings.enabled? %>
+    <p class="plugin-check-ai-unavailable">
+      <%= plugin_check_ai_unavailable_message(@ai_settings) %>
+      <%= link_to l(:label_plugin_check_settings),
+                  plugin_settings_path(:id => 'redmine_plugin_check'),
+                  :class => 'icon icon-settings plugin-check-settings-button' %>
+      <br />
+      <span class="plugin-check-ai-manual-hint"><%= l(:text_ai_markdown_manual_analysis_hint) %></span>
+    </p>
+  <% elsif @target_version.blank? %>
     <p class="plugin-check-ai-unavailable"><%= raw l(:text_ai_analysis_target_version_required) %></p>
   <% elsif ai_analysis_content.blank? && plugin_check_ai_analysis_available?(@ai_settings) %>
     <%= form_tag plugin_check_ai_analysis_path, :method => :post, :class => 'plugin-check-ai-form', :id => 'plugin-check-ai-form' do %>
@@ -187,10 +196,6 @@
       <%= link_to l(:label_plugin_check_settings),
                   plugin_settings_path(:id => 'redmine_plugin_check'),
                   :class => 'icon icon-settings plugin-check-settings-button' %>
-      <% if @ai_settings && !@ai_settings.enabled? %>
-        <br />
-        <span class="plugin-check-ai-manual-hint"><%= l(:text_ai_markdown_manual_analysis_hint) %></span>
-      <% end %>
     </p>
   <% end %>
 

@@ -49,7 +49,7 @@ en:
   text_ai_select_gemini_model: "Select a model to update the endpoint."
   text_ai_gemini_models_fetch_failed: "Could not fetch Gemini models."
   text_ai_fetch_gemini_models_saved_settings_required: "Fetching Gemini models uses saved settings. Enable AI analysis, save the settings, and set a Gemini API key first."
-  text_ai_analysis_target_version_required: "Enter the <strong>target Redmine version</strong>, click <strong>Apply</strong>, then <strong>analyze with AI</strong>."
+  text_ai_analysis_target_version_required: "<strong>Select or enter a target Redmine version</strong>, click <strong>Apply</strong>, then <strong>analyze with AI</strong>."
   text_ai_analysis_connecting: "Connecting to AI..."
   text_ai_analysis_saved_at: "Saved at: %{value}"
   text_ai_api_key_env_preferred: "Using an environment variable for the API key is recommended. When present, the environment variable takes precedence over this saved setting."
@@ -67,7 +67,7 @@ en:
   label_plugin_check_help_column_description: "What it checks"
   label_review_result: "Review result"
   label_action_plan: "Action plan"
-  text_redmine_plugin_check_intro: "Check installed plugin compatibility before a Redmine upgrade and analyze it with AI."
+  text_redmine_plugin_check_intro: "Check installed plugin compatibility before a Redmine upgrade and analyze it with AI.<br />First, <strong>select a target Redmine version</strong> and click <strong>Apply</strong>."
   redmine_plugin_check:
     column_help:
       status: "Overall result from the target version and detected signals: OK, Warning, Unknown, or Risky."

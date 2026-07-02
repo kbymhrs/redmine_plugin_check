@@ -49,7 +49,7 @@ ja:
   text_ai_select_gemini_model: "モデルを選択するとエンドポイントに反映します。"
   text_ai_gemini_models_fetch_failed: "Gemini モデルを取得できませんでした。"
   text_ai_fetch_gemini_models_saved_settings_required: "Gemini モデル取得は、AI 分析を有効にして保存し、Gemini の API キーを設定してから実行してください。"
-  text_ai_analysis_target_version_required: "<strong>移行先 Redmine バージョンを入力</strong>して<strong>適用</strong>してから、<strong>AI で分析</strong>してください。"
+  text_ai_analysis_target_version_required: "<strong>移行先 Redmine バージョンを選択または入力</strong>して<strong>適用</strong>してから、<strong>AI で分析</strong>してください。"
   text_ai_analysis_connecting: "AI 接続中..."
   text_ai_analysis_saved_at: "保存日時: %{value}"
   text_ai_api_key_env_preferred: "API キーは環境変数の利用を推奨します。環境変数に値がある場合は画面設定より優先されます。"
@@ -67,7 +67,7 @@ ja:
   label_plugin_check_help_column_description: "見ている内容"
   label_review_result: "レビュー結果"
   label_action_plan: "対応方針"
-  text_redmine_plugin_check_intro: "Redmine アップグレード前に、インストール済み plugin の互換性を確認し、AIで分析できます。"
+  text_redmine_plugin_check_intro: "Redmine アップグレード前に、インストール済み plugin の互換性を確認し、AIで分析できます。<br />まずは、<strong>移行先 Redmine バージョンを選択</strong>して<strong>適用</strong>してください。"
   redmine_plugin_check:
     column_help:
       status: "入力した移行先バージョンと検出結果から、OK / Warning / Unknown / Risky の総合判定を表示します。"

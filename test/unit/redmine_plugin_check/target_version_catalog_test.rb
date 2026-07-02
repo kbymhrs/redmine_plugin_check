@@ -10,7 +10,7 @@ class RedminePluginCheckTargetVersionCatalogTest < ActiveSupport::TestCase
     assert_equal ['6.1.2', '6.1.3'], catalog.parse_versions(html)
   end
 
-  test 'returns versions greater than or equal to current version' do
+  test 'returns versions greater than current version' do
     store = {}
     catalog = RedminePluginCheck::TargetVersionCatalog.new(
       :settings_store => store,
@@ -18,7 +18,7 @@ class RedminePluginCheckTargetVersionCatalogTest < ActiveSupport::TestCase
       :now => lambda { Time.local(2026, 7, 1, 12, 0, 0) }
     )
 
-    assert_equal ['3.3.3', '6.1.3'], catalog.versions_for('3.3.3.stable')
+    assert_equal ['6.1.3'], catalog.versions_for('3.3.3.stable')
   end
 
   test 'uses cached versions for twenty four hours' do
@@ -33,7 +33,7 @@ class RedminePluginCheckTargetVersionCatalogTest < ActiveSupport::TestCase
       :now => lambda { Time.local(2026, 7, 2, 11, 59, 0) }
     )
 
-    assert_equal ['3.3.3', '6.1.3'], catalog.versions_for('3.3.3')
+    assert_equal ['6.1.3'], catalog.versions_for('3.3.3')
     assert_equal 0, calls
   end
 

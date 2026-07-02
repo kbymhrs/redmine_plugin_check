@@ -23,7 +23,7 @@ module RedminePluginCheck
         write_cache(versions)
       end
 
-      versions.select { |version| gem_version(version) && gem_version(version) >= current }
+      versions.select { |version| gem_version(version) && gem_version(version) > current }
     rescue StandardError
       []
     end

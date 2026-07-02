@@ -67,7 +67,7 @@
     <%= hidden_field_tag "settings[#{RedminePluginCheck::AiSettings.api_key_setting_key(preset_key)}]", api_key_value, :id => ai_api_key_field_ids[preset_key] %>
   <% end %>
   <%= hidden_field_tag 'settings[ai_api_key]', ai_settings['ai_api_key'] %>
-  <%= password_field_tag 'settings_ai_api_key_visible', ai_api_key_values[ai_settings_object.provider_preset], :size => 80, :autocomplete => 'off', :id => 'settings_ai_api_key' %>
+  <%= password_field_tag "settings[#{RedminePluginCheck::AiSettings.api_key_setting_key(ai_settings_object.provider_preset)}]", ai_api_key_values[ai_settings_object.provider_preset], :size => 80, :autocomplete => 'off', :id => 'settings_ai_api_key' %>
   <em class="info"><%= l(:text_ai_api_key_env_preferred) %></em>
 </p>
 
@@ -77,7 +77,7 @@
     <%= hidden_field_tag "settings[#{RedminePluginCheck::AiSettings.model_setting_key(preset_key)}]", model_value, :id => ai_model_field_ids[preset_key] %>
   <% end %>
   <%= hidden_field_tag 'settings[ai_model]', ai_settings['ai_model'] %>
-  <%= text_field_tag 'settings_ai_model_visible', ai_model_values[ai_settings_object.provider_preset], :size => 40, :id => 'settings_ai_model' %>
+  <%= text_field_tag "settings[#{RedminePluginCheck::AiSettings.model_setting_key(ai_settings_object.provider_preset)}]", ai_model_values[ai_settings_object.provider_preset], :size => 40, :id => 'settings_ai_model' %>
   <%= button_tag l(:button_ai_fetch_models), :type => 'button', :id => 'settings_ai_fetch_models', :class => 'icon icon-reload' %>
   <%= select_tag 'settings_ai_model_select', '', :id => 'settings_ai_model_select', :style => 'display:none' %>
   <em class="info" id="settings_ai_model_status"></em>
@@ -106,6 +106,8 @@
   var apiKeyFieldIds = <%= raw ai_api_key_field_ids.to_json %>;
   var modelValues = <%= raw ai_model_values.to_json %>;
   var modelFieldIds = <%= raw ai_model_field_ids.to_json %>;
+  var apiKeySettingKeys = <%= raw Hash[ai_provider_presets.keys.map { |preset_key| [preset_key, RedminePluginCheck::AiSettings.api_key_setting_key(preset_key)] }].to_json %>;
+  var modelSettingKeys = <%= raw Hash[ai_provider_presets.keys.map { |preset_key| [preset_key, RedminePluginCheck::AiSettings.model_setting_key(preset_key)] }].to_json %>;
   var select = document.getElementById('settings_ai_provider_preset');
   var fetchModels = document.getElementById('settings_ai_fetch_models');
   var modelSelect = document.getElementById('settings_ai_model_select');
@@ -126,6 +128,31 @@
     return 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent';
   }
 
+function setDisabledField(field, disabled) {
+  if (!field) { return; }
+  field.disabled = disabled;
+}
+
+function setVisibleFieldName(field, settingKey) {
+  if (field && settingKey) { field.name = 'settings[' + settingKey + ']'; }
+}
+
+function syncApiKeyHiddenFields(activePreset) {
+  for (var preset in apiKeyFieldIds) {
+    if (apiKeyFieldIds.hasOwnProperty(preset)) {
+      setDisabledField(document.getElementById(apiKeyFieldIds[preset]), preset === activePreset);
+    }
+  }
+}
+
+function syncModelHiddenFields(activePreset) {
+  for (var preset in modelFieldIds) {
+    if (modelFieldIds.hasOwnProperty(preset)) {
+      setDisabledField(document.getElementById(modelFieldIds[preset]), preset === activePreset);
+    }
+  }
+}
+
 function saveCurrentApiKey() {
   if (!apiKeyField || !currentPreset) { return; }
   apiKeyValues[currentPreset] = apiKeyField.value;
@@ -134,7 +161,11 @@ function saveCurrentApiKey() {
 }
 
 function loadApiKeyForPreset(preset) {
-  if (apiKeyField) { apiKeyField.value = apiKeyValues[preset] || ''; }
+  if (apiKeyField) {
+    apiKeyField.value = apiKeyValues[preset] || '';
+    setVisibleFieldName(apiKeyField, apiKeySettingKeys[preset]);
+  }
+  syncApiKeyHiddenFields(preset);
 }
 
 function saveCurrentModel() {
@@ -151,6 +182,8 @@ function loadModelForPreset(preset) {
   if (!modelField) { return; }
 
   modelField.value = modelValues[preset] || (presets[preset] ? presets[preset].model : '');
+  setVisibleFieldName(modelField, modelSettingKeys[preset]);
+  syncModelHiddenFields(preset);
 }
 
 function currentModelValue() {
@@ -237,6 +270,8 @@ if (apiKeyField && apiKeyField.form) {
     };
   }
 
+  loadApiKeyForPreset(currentPreset);
+  loadModelForPreset(currentPreset);
   updateModelControls();
 }());
 //]]>

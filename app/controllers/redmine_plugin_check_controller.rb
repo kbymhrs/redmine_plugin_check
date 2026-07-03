@@ -35,7 +35,7 @@ class RedminePluginCheckController < ApplicationController
     if @target_version.blank?
       @ai_analysis_target_version_missing = true
     else
-      @ai_analysis_result = RedminePluginCheck::AiClient.new(@ai_settings).call(ai_markdown_export(@plugins))
+      @ai_analysis_result = RedminePluginCheck::AiClient.new(@ai_settings).call(ai_markdown_for_analysis(@plugins))
       normalize_ai_analysis_result
       save_latest_ai_analysis_result
     end
@@ -198,6 +198,19 @@ class RedminePluginCheckController < ApplicationController
     RedminePluginCheck::AiMarkdownReport.new(@report, plugins).call
   end
 
+
+
+  def ai_markdown_for_analysis(plugins)
+    requested_at = Time.now.utc
+    [
+      ai_markdown_export(plugins),
+      '',
+      '## Analysis Run',
+      "- Requested at: #{formatted_time(requested_at)}",
+      "- Request ID: #{requested_at.to_i}-#{rand(1000000)}",
+      '- Treat this as a fresh analysis request. Re-evaluate the report instead of reusing a previous answer.'
+    ].join("\n")
+  end
 
   def normalize_ai_analysis_result
     return unless @ai_analysis_result && @ai_analysis_result.success

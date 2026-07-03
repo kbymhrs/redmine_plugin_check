@@ -12,6 +12,8 @@ module RedminePluginCheck
     TEST_PROMPT = 'Reply with OK only.'.freeze
     GEMINI_MODELS_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models'.freeze
     CLAUDE_MODELS_ENDPOINT = 'https://api.anthropic.com/v1/models'.freeze
+    RETRYABLE_HTTP_STATUSES = [429, 500, 502, 503, 504].freeze
+    RETRY_DELAYS = [1, 2].freeze
 
     def initialize(settings)
       @settings = settings
@@ -23,9 +25,9 @@ module RedminePluginCheck
       return Result.new(false, nil, :api_key_missing, nil) unless settings.api_key_present?
       return Result.new(false, nil, :model_missing, nil) unless present?(settings.model)
 
-      response = post_json(api_uri, request_payload(markdown))
+      response = post_json_with_retries(api_uri, request_payload(markdown))
       status_code = response.code.to_i
-      return Result.new(false, nil, :http_error, status_code) unless status_code >= 200 && status_code < 300
+      return Result.new(false, nil, http_error_key(status_code), status_code) unless status_code >= 200 && status_code < 300
 
       content = extract_content(response.body)
       return Result.new(true, content, nil, status_code) if present?(content)
@@ -176,6 +178,19 @@ module RedminePluginCheck
       content.map { |part| part.is_a?(Hash) ? part['text'] : nil }.compact.join
     end
 
+
+    def post_json_with_retries(uri, body)
+      attempt = 0
+
+      loop do
+        response = post_json(uri, body)
+        status_code = response.code.to_i
+        return response unless retryable_http_status?(status_code) && attempt < RETRY_DELAYS.length
+
+        sleep RETRY_DELAYS[attempt]
+        attempt += 1
+      end
+    end
     def post_json(uri, body)
       response = nil
       Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https',
@@ -293,6 +308,17 @@ module RedminePluginCheck
       end.compact.reject(&:empty?).sort
     end
 
+
+    def retryable_http_status?(status_code)
+      RETRYABLE_HTTP_STATUSES.include?(status_code.to_i)
+    end
+
+    def http_error_key(status_code)
+      return :rate_limited if status_code.to_i == 429
+      return :service_unavailable if retryable_http_status?(status_code)
+
+      :http_error
+    end
     def present?(value)
       !value.to_s.strip.empty?
     end

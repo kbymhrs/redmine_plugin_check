@@ -94,6 +94,8 @@ ja:
       unsupported_provider: "この AI プロバイダではモデル取得に対応していません"
       model_missing: "AI モデルが未設定です"
       http_error: "AI API がエラーを返しました"
+      service_unavailable: "AI API が一時的に混雑または過負荷です。時間を置くか、最大送信文字数を小さくして再実行してください"
+      rate_limited: "AI API の利用制限に達しました。時間を置いて再実行してください"
       request_timeout: "AI API への接続がタイムアウトしました"
       ssl_error: "AI API への SSL 接続に失敗しました"
       json_parse_error: "AI API の応答 JSON を解析できませんでした"
@@ -177,3 +179,4 @@ ja:
         5. 追加調査が必要なもの
         6. 実施順序
         7. 管理者向けの簡潔な結論
+

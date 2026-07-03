@@ -176,6 +176,37 @@ test 'appends chat completions path for v1 endpoint' do
   assert_equal 'https://example.openai.azure.com/openai/v1/chat/completions', requested_uris.first
 end
 
+  test 'retries temporary http errors before returning success' do
+    responses = [
+      FakeResponse.new('503', '{}'),
+      FakeResponse.new('200', JSON.generate('choices' => [{ 'message' => { 'content' => 'Retried plan' } }]))
+    ]
+    client = RedminePluginCheck::AiClient.new(ai_settings)
+    client.define_singleton_method(:sleep) { |_seconds| nil }
+    client.define_singleton_method(:post_json) do |_uri, _body|
+      responses.shift
+    end
+
+    result = client.call('plugin report')
+
+    assert result.success
+    assert_equal 'Retried plan', result.content
+    assert_equal 0, responses.length
+  end
+
+  test 'classifies repeated service unavailable after retries' do
+    client = RedminePluginCheck::AiClient.new(ai_settings)
+    client.define_singleton_method(:sleep) { |_seconds| nil }
+    client.define_singleton_method(:post_json) do |_uri, _body|
+      FakeResponse.new('503', '{}')
+    end
+
+    result = client.call('plugin report')
+
+    assert !result.success
+    assert_equal :service_unavailable, result.error
+    assert_equal 503, result.status_code
+  end
   private
 
   def ai_settings(overrides = {})
@@ -194,5 +225,4 @@ end
     RedminePluginCheck::AiSettings.new(settings, {})
   end
 end
-
 

@@ -94,6 +94,8 @@ en:
       unsupported_provider: "This AI provider does not support model fetching"
       model_missing: "AI model is missing"
       http_error: "AI API returned an error"
+      service_unavailable: "AI API is temporarily busy or overloaded. Wait and retry, or reduce the max prompt characters."
+      rate_limited: "AI API rate limit was reached. Wait and retry."
       request_timeout: "AI API request timed out"
       ssl_error: "AI API SSL connection failed"
       json_parse_error: "AI API response JSON could not be parsed"
@@ -177,3 +179,4 @@ en:
         5. Items that need additional research
         6. Suggested execution order
         7. A concise conclusion for administrators
+

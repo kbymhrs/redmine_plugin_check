@@ -77,9 +77,10 @@
     <%= hidden_field_tag "settings[#{RedminePluginCheck::AiSettings.model_setting_key(preset_key)}]", model_value, :id => ai_model_field_ids[preset_key] %>
   <% end %>
   <%= hidden_field_tag 'settings[ai_model]', ai_settings['ai_model'] %>
-  <%= text_field_tag "settings[#{RedminePluginCheck::AiSettings.model_setting_key(ai_settings_object.provider_preset)}]", ai_model_values[ai_settings_object.provider_preset], :size => 40, :id => 'settings_ai_model' %>
+  <% current_model_value = ai_model_values[ai_settings_object.provider_preset] %>
+  <%= text_field_tag "settings[#{RedminePluginCheck::AiSettings.model_setting_key(ai_settings_object.provider_preset)}]", current_model_value, :size => 40, :id => 'settings_ai_model' %>
   <%= button_tag l(:button_ai_fetch_models), :type => 'button', :id => 'settings_ai_fetch_models', :class => 'icon icon-reload' %>
-  <%= select_tag 'settings_ai_model_select', '', :id => 'settings_ai_model_select', :style => 'display:none' %>
+  <%= select_tag "settings[#{RedminePluginCheck::AiSettings.model_setting_key(ai_settings_object.provider_preset)}]", options_for_select([[current_model_value, current_model_value]], current_model_value), :id => 'settings_ai_model_select', :style => 'display:none' %>
   <em class="info" id="settings_ai_model_status"></em>
   <em class="info" id="settings_ai_model_note"><%= l(:text_ai_fetch_models_saved_settings_required) %></em>
 </p>
@@ -169,12 +170,54 @@ function loadApiKeyForPreset(preset) {
 }
 
 function saveCurrentModel() {
-  var modelField = document.getElementById('settings_ai_model');
-  if (!modelField || !currentPreset) { return; }
+  if (!currentPreset) { return; }
 
-  modelValues[currentPreset] = modelField.value;
+  modelValues[currentPreset] = currentModelValue();
   var hidden = document.getElementById(modelFieldIds[currentPreset]);
-  if (hidden) { hidden.value = modelField.value; }
+  if (hidden) { hidden.value = modelValues[currentPreset]; }
+}
+
+function useModelTextInput() {
+  var modelField = document.getElementById('settings_ai_model');
+  if (modelSelect) {
+    modelSelect.name = 'settings_ai_model_select';
+    modelSelect.disabled = true;
+    modelSelect.style.display = 'none';
+  }
+  if (modelField) {
+    setVisibleFieldName(modelField, modelSettingKeys[currentPreset]);
+    modelField.disabled = false;
+    modelField.style.display = '';
+  }
+}
+
+function ensureModelSelectOption(value) {
+  if (!modelSelect || !value) { return; }
+
+  for (var i = 0; i < modelSelect.options.length; i++) {
+    if (modelSelect.options[i].value === value) {
+      modelSelect.selectedIndex = i;
+      return;
+    }
+  }
+
+  var option = document.createElement('option');
+  option.value = value;
+  option.text = value;
+  option.selected = true;
+  modelSelect.insertBefore(option, modelSelect.firstChild);
+}
+
+function useModelSelectInput() {
+  var modelField = document.getElementById('settings_ai_model');
+  if (!modelSelect || !modelField) { return; }
+
+  ensureModelSelectOption(modelField.value);
+  modelSelect.name = modelField.name;
+  modelSelect.disabled = false;
+  modelSelect.style.display = '';
+  modelField.disabled = true;
+  modelField.style.display = 'none';
 }
 
 function loadModelForPreset(preset) {
@@ -187,15 +230,23 @@ function loadModelForPreset(preset) {
 }
 
 function currentModelValue() {
+  if (modelSelect && !modelSelect.disabled && modelSelect.style.display !== 'none') {
+    return modelSelect.value;
+  }
+
   var modelField = document.getElementById('settings_ai_model');
   return modelField ? modelField.value : '';
 }
 
+function modelListSupported() {
+  return select && (select.value === 'openai' || select.value === 'gemini' || select.value === 'claude');
+}
+
 function updateModelControls() {
-  var supportsModels = select && (select.value === 'openai' || select.value === 'gemini' || select.value === 'claude');
+  var supportsModels = modelListSupported();
   if (fetchModels) { fetchModels.style.display = supportsModels ? '' : 'none'; }
   if (modelNote) { modelNote.style.display = supportsModels ? '' : 'none'; }
-  if (!supportsModels && modelSelect) { modelSelect.style.display = 'none'; }
+  if (supportsModels) { useModelSelectInput(); } else { useModelTextInput(); }
   if (!supportsModels && modelStatus) { modelStatus.innerHTML = ''; }
 }
 
@@ -236,18 +287,31 @@ if (apiKeyField && apiKeyField.form) {
         .then(function(response) { return response.json().then(function(data) { return { ok: response.ok, data: data }; }); })
         .then(function(result) {
           if (!result.ok || !result.data.success) { throw new Error(result.data.message || '<%= j l(:text_ai_models_fetch_failed) %>'); }
+          var selectedModel = currentModelValue();
+          var selectedModelFound = false;
           modelSelect.innerHTML = '';
           result.data.models.forEach(function(model) {
             var option = document.createElement('option');
             option.value = model;
             option.text = model;
+            if (model === selectedModel) {
+              option.selected = true;
+              selectedModelFound = true;
+            }
             modelSelect.appendChild(option);
           });
-          modelSelect.style.display = '';
+          if (!selectedModelFound && selectedModel) {
+            var currentOption = document.createElement('option');
+            currentOption.value = selectedModel;
+            currentOption.text = selectedModel;
+            currentOption.selected = true;
+            modelSelect.insertBefore(currentOption, modelSelect.firstChild);
+          }
+          useModelSelectInput();
           modelStatus.innerHTML = '<%= j l(:text_ai_select_model) %>';
         })
         .catch(function(error) {
-          modelSelect.style.display = 'none';
+          useModelTextInput();
           modelStatus.innerHTML = error.message;
         });
     };

@@ -121,6 +121,8 @@
   var modelSettingKeys = <%= raw Hash[ai_provider_presets.keys.map { |preset_key| [preset_key, RedminePluginCheck::AiSettings.model_setting_key(preset_key)] }].to_json %>;
   var select = document.getElementById('settings_ai_provider_preset');
   var fetchModels = document.getElementById('settings_ai_fetch_models');
+  var fetchModelsLabel = '<%= j l(:button_ai_fetch_models) %>';
+  var fetchModelsAfterApplyLabel = '<%= j l(:button_ai_fetch_models_after_apply) %>';
   var modelSelect = document.getElementById('settings_ai_model_select');
   var modelStatus = document.getElementById('settings_ai_model_status');
   var modelNote = document.getElementById('settings_ai_model_note');
@@ -252,12 +254,45 @@ function modelListSupported() {
   return select && (select.value === 'openai' || select.value === 'gemini' || select.value === 'claude');
 }
 
+function fieldValue(id) {
+  var field = document.getElementById(id);
+  return field ? field.value : '';
+}
+
+function modelFetchSettingsSignature() {
+  return [
+    select ? select.value : '',
+    fieldValue('settings_ai_provider_label'),
+    fieldValue('settings_ai_endpoint'),
+    fieldValue('settings_ai_api_key_env'),
+    apiKeyField ? apiKeyField.value : '',
+    currentModelValue(),
+    fieldValue('settings_ai_timeout_seconds')
+  ].join('\u001f');
+}
+
+var appliedModelFetchSettingsSignature = null;
+
+function updateFetchModelsDirtyState() {
+  if (!fetchModels || !modelListSupported()) { return; }
+
+  var dirty = appliedModelFetchSettingsSignature !== null && modelFetchSettingsSignature() !== appliedModelFetchSettingsSignature;
+  fetchModels.disabled = dirty;
+  fetchModels.innerHTML = dirty ? fetchModelsAfterApplyLabel : fetchModelsLabel;
+  if (dirty) {
+    fetchModels.className = fetchModels.className.replace(/\s?icon-reload/g, '');
+  } else if (fetchModels.className.indexOf('icon-reload') < 0) {
+    fetchModels.className = fetchModels.className + ' icon-reload';
+  }
+}
+
 function updateModelControls() {
   var supportsModels = modelListSupported();
   if (fetchModels) { fetchModels.style.display = supportsModels ? '' : 'none'; }
   if (modelNote) { modelNote.style.display = supportsModels ? '' : 'none'; }
   if (supportsModels) { useModelSelectInput(); } else { useModelTextInput(); }
   if (!supportsModels && modelStatus) { modelStatus.innerHTML = ''; }
+  updateFetchModelsDirtyState();
 }
 
 select.onchange = function() {
@@ -311,7 +346,7 @@ if (apiKeyField && apiKeyField.form) {
 
   if (fetchModels) {
     fetchModels.onclick = function() {
-      if (!modelStatus || !modelSelect) { return; }
+      if (!modelStatus || !modelSelect || fetchModels.disabled) { return; }
       saveCurrentApiKey();
       saveCurrentModel();
       modelStatus.innerHTML = '<%= j l(:text_ai_fetching_models) %>';
@@ -359,7 +394,25 @@ if (apiKeyField && apiKeyField.form) {
       setValue('settings_ai_model', modelSelect.value);
       saveCurrentModel();
       if (select.value === 'gemini') { setValue('settings_ai_endpoint', geminiEndpoint(modelSelect.value)); }
+      updateFetchModelsDirtyState();
     };
+  }
+
+  function watchModelFetchSettings() {
+    var ids = [
+      'settings_ai_provider_label',
+      'settings_ai_endpoint',
+      'settings_ai_api_key_env',
+      'settings_ai_api_key',
+      'settings_ai_timeout_seconds'
+    ];
+    for (var i = 0; i < ids.length; i++) {
+      var field = document.getElementById(ids[i]);
+      if (field) {
+        field.onchange = updateFetchModelsDirtyState;
+        field.onkeyup = updateFetchModelsDirtyState;
+      }
+    }
   }
 
   if (testConnection) {
@@ -374,6 +427,9 @@ if (apiKeyField && apiKeyField.form) {
   loadApiKeyForPreset(currentPreset);
   loadModelForPreset(currentPreset);
   updateModelControls();
+  appliedModelFetchSettingsSignature = modelFetchSettingsSignature();
+  watchModelFetchSettings();
+  updateFetchModelsDirtyState();
 }());
 //]]>
 </script>

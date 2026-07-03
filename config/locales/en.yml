@@ -45,6 +45,7 @@ en:
   button_ai_analyze: "Analyze with AI"
   button_ai_reanalyze: "Analyze again"
   button_ai_fetch_models: "Fetch models"
+  button_ai_fetch_models_after_apply: "Fetch models (after apply)"
   text_ai_fetching_models: "Fetching models..."
   text_ai_select_model: "Select a model to update the setting."
   text_ai_models_fetch_failed: "Could not fetch models."

@@ -45,6 +45,7 @@ ja:
   button_ai_analyze: "AI で分析する"
   button_ai_reanalyze: "再度 AI 分析"
   button_ai_fetch_models: "モデル取得"
+  button_ai_fetch_models_after_apply: "モデル取得（適用後可能）"
   text_ai_fetching_models: "モデルを取得しています..."
   text_ai_select_model: "モデルを選択すると設定に反映します。"
   text_ai_models_fetch_failed: "モデルを取得できませんでした。"

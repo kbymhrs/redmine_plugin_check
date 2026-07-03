@@ -85,7 +85,7 @@
                      :id => 'settings_ai_model',
                      :style => (model_select_supported ? 'display:none' : nil),
                      :disabled => model_select_supported %>
-  <%= button_tag l(:button_ai_fetch_models), :type => 'button', :id => 'settings_ai_fetch_models', :class => 'icon icon-reload' %>
+  <%= button_tag l(:button_ai_fetch_models), :type => 'button', :id => 'settings_ai_fetch_models' %>
   <%= select_tag "settings[#{RedminePluginCheck::AiSettings.model_setting_key(ai_settings_object.provider_preset)}]",
                  options_for_select([[current_model_value, current_model_value]], current_model_value),
                  :id => 'settings_ai_model_select',
@@ -277,12 +277,7 @@ function updateFetchModelsDirtyState() {
   var dirty = appliedModelFetchSettingsSignature !== null && modelFetchSettingsSignature() !== appliedModelFetchSettingsSignature;
   var apiKeyMissing = !apiKeyField || apiKeyField.value.replace(/^\s+|\s+$/g, '') === '';
   fetchModels.disabled = dirty || apiKeyMissing;
-  fetchModels.innerHTML = dirty ? fetchModelsAfterApplyLabel : fetchModelsLabel;
-  if (fetchModels.disabled) {
-    fetchModels.className = fetchModels.className.replace(/\s?icon-reload/g, '');
-  } else if (fetchModels.className.indexOf('icon-reload') < 0) {
-    fetchModels.className = fetchModels.className + ' icon-reload';
-  }
+  fetchModels.innerHTML = fetchModels.disabled ? fetchModelsAfterApplyLabel : fetchModelsLabel;
 }
 
 function updateModelControls() {

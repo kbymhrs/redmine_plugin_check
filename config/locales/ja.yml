@@ -48,7 +48,7 @@ ja:
   text_ai_fetching_models: "モデルを取得しています..."
   text_ai_select_model: "モデルを選択すると設定に反映します。"
   text_ai_models_fetch_failed: "モデルを取得できませんでした。"
-  text_ai_fetch_models_saved_settings_required: "モデル取得は、AI 分析を有効にして保存し、対象プロバイダの API キーを設定してから実行してください。OpenAI / Claude / Gemini で利用できます。"
+  text_ai_fetch_models_saved_settings_required: "モデル取得は、現在この画面に入力されている API キーと設定で実行します。保存前でも取得できます。OpenAI / Claude / Gemini で利用できます。"
   text_ai_analysis_target_version_required: "<strong>移行先 Redmine バージョンを選択または入力</strong>して<strong>適用</strong>してから、<strong>AI で分析</strong>してください。"
   text_ai_analysis_connecting: "AI 接続中..."
   text_ai_analysis_saved_at: "保存日時: %{value}"

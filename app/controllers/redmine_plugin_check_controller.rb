@@ -51,7 +51,7 @@ class RedminePluginCheckController < ApplicationController
   end
 
   def ai_models
-    settings = RedminePluginCheck::AiSettings.new
+    settings = RedminePluginCheck::AiSettings.new(ai_model_request_settings)
     result = RedminePluginCheck::AiClient.new(settings).available_models
 
     if result.success
@@ -73,6 +73,28 @@ class RedminePluginCheckController < ApplicationController
     redirect_to plugin_settings_path(:id => 'redmine_plugin_check')
   end
   private
+
+  def ai_model_request_settings
+    current = {}
+    saved = Setting.plugin_redmine_plugin_check if defined?(Setting) && Setting.respond_to?(:plugin_redmine_plugin_check)
+    saved.each { |key, value| current[key.to_s] = value } if saved.respond_to?(:each)
+
+    preset = params[:ai_provider_preset].to_s
+    preset = 'custom' unless RedminePluginCheck::AiSettings::PROVIDER_PRESETS.key?(preset)
+
+    current['ai_provider_preset'] = preset
+    current['ai_provider_label'] = params[:ai_provider_label].to_s
+    current['ai_endpoint'] = params[:ai_endpoint].to_s
+    current['ai_api_key_env'] = params[:ai_api_key_env].to_s
+    current['ai_timeout_seconds'] = params[:ai_timeout_seconds].to_s if params.key?(:ai_timeout_seconds)
+
+    api_key = params[:ai_api_key].to_s
+    current[RedminePluginCheck::AiSettings.api_key_setting_key(preset)] = api_key unless api_key.blank?
+
+    model = params[:ai_model].to_s
+    current[RedminePluginCheck::AiSettings.model_setting_key(preset)] = model unless model.blank?
+    current
+  end
 
   def load_report
     @target_version = params[:target_version].to_s.strip

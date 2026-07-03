@@ -97,7 +97,7 @@
 
 <p>
   <label><%= l(:label_ai_timeout_seconds) %></label>
-  <%= text_field_tag 'settings[ai_timeout_seconds]', ai_settings['ai_timeout_seconds'], :size => 8 %>
+  <%= text_field_tag 'settings[ai_timeout_seconds]', ai_settings['ai_timeout_seconds'], :size => 8, :id => 'settings_ai_timeout_seconds' %>
 </p>
 
 <p>
@@ -289,11 +289,38 @@ if (apiKeyField && apiKeyField.form) {
 }
 
 
+  function aiModelRequestBody() {
+    var values = [
+      ['ai_provider_preset', select.value],
+      ['ai_provider_label', document.getElementById('settings_ai_provider_label') ? document.getElementById('settings_ai_provider_label').value : ''],
+      ['ai_endpoint', document.getElementById('settings_ai_endpoint') ? document.getElementById('settings_ai_endpoint').value : ''],
+      ['ai_api_key_env', document.getElementById('settings_ai_api_key_env') ? document.getElementById('settings_ai_api_key_env').value : ''],
+      ['ai_api_key', apiKeyField ? apiKeyField.value : ''],
+      ['ai_model', currentModelValue()],
+      ['ai_timeout_seconds', document.getElementById('settings_ai_timeout_seconds') ? document.getElementById('settings_ai_timeout_seconds').value : '']
+    ];
+    var token = document.getElementsByName('authenticity_token')[0];
+    if (token) { values.push(['authenticity_token', token.value]); }
+
+    var body = [];
+    for (var i = 0; i < values.length; i++) {
+      body.push(encodeURIComponent(values[i][0]) + '=' + encodeURIComponent(values[i][1] || ''));
+    }
+    return body.join('&');
+  }
+
   if (fetchModels) {
     fetchModels.onclick = function() {
       if (!modelStatus || !modelSelect) { return; }
+      saveCurrentApiKey();
+      saveCurrentModel();
       modelStatus.innerHTML = '<%= j l(:text_ai_fetching_models) %>';
-      fetch('<%= plugin_check_ai_models_path %>', { credentials: 'same-origin' })
+      fetch('<%= plugin_check_ai_models_path %>', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+        body: aiModelRequestBody()
+      })
         .then(function(response) { return response.json().then(function(data) { return { ok: response.ok, data: data }; }); })
         .then(function(result) {
           if (!result.ok || !result.data.success) { throw new Error(result.data.message || '<%= j l(:text_ai_models_fetch_failed) %>'); }

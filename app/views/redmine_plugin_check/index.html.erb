@@ -161,7 +161,7 @@
     <% ai_analysis_content = @ai_analysis_result.content %>
     <% ai_analysis_label = l(:label_ai_analysis_result) %>
     <% ai_analysis_saved_at = @latest_ai_analysis_generated_at %>
-  <% elsif @latest_ai_analysis_content.present? %>
+  <% elsif !@ai_analysis_requested && @latest_ai_analysis_content.present? %>
     <% ai_analysis_content = @latest_ai_analysis_content %>
     <% ai_analysis_label = l(:label_latest_ai_analysis_result) %>
     <% ai_analysis_saved_at = @latest_ai_analysis_generated_at %>

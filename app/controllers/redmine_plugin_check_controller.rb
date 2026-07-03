@@ -31,6 +31,7 @@ class RedminePluginCheckController < ApplicationController
 
   def ai_analysis
     load_report
+    @ai_analysis_requested = true
 
     if @target_version.blank?
       @ai_analysis_target_version_missing = true

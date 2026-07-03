@@ -264,7 +264,6 @@ function modelFetchSettingsSignature() {
     fieldValue('settings_ai_endpoint'),
     fieldValue('settings_ai_api_key_env'),
     apiKeyField ? apiKeyField.value : '',
-    currentModelValue(),
     fieldValue('settings_ai_timeout_seconds')
   ].join('\u001f');
 }

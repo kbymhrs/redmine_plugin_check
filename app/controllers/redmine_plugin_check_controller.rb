@@ -98,7 +98,8 @@ class RedminePluginCheckController < ApplicationController
   end
 
   def load_report
-    @target_version = params[:target_version].to_s.strip
+    @target_version = target_version_param
+    save_target_version_preference(@target_version) if params.key?(:target_version)
     @check_latest = params[:check_latest].to_s == '1'
     @status_filter = normalize_status_filter(params[:status_filter])
     @show_details = params[:show_details].to_s == '1'
@@ -111,6 +112,32 @@ class RedminePluginCheckController < ApplicationController
     @target_version_options = request.format.html? ? RedminePluginCheck::TargetVersionCatalog.new.versions_for(@report.redmine_version) : []
     @ai_settings = RedminePluginCheck::AiSettings.new
     load_latest_ai_analysis_result
+  end
+
+  def target_version_param
+    return params[:target_version].to_s.strip if params.key?(:target_version)
+
+    saved_target_version_preference
+  end
+
+  def saved_target_version_preference
+    settings = plugin_settings_hash
+    settings['last_target_version'].to_s.strip
+  end
+
+  def save_target_version_preference(value)
+    return unless defined?(Setting) && Setting.respond_to?(:plugin_redmine_plugin_check=)
+
+    settings = plugin_settings_hash
+    settings['last_target_version'] = value.to_s.strip
+    Setting.plugin_redmine_plugin_check = settings
+  end
+
+  def plugin_settings_hash
+    settings = {}
+    current = Setting.plugin_redmine_plugin_check if defined?(Setting) && Setting.respond_to?(:plugin_redmine_plugin_check)
+    current.each { |key, value| settings[key.to_s] = value } if current.respond_to?(:each)
+    settings
   end
 
   def normalize_status_filter(value)

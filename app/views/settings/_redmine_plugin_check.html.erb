@@ -78,9 +78,19 @@
   <% end %>
   <%= hidden_field_tag 'settings[ai_model]', ai_settings['ai_model'] %>
   <% current_model_value = ai_model_values[ai_settings_object.provider_preset] %>
-  <%= text_field_tag "settings[#{RedminePluginCheck::AiSettings.model_setting_key(ai_settings_object.provider_preset)}]", current_model_value, :size => 40, :id => 'settings_ai_model' %>
+  <% model_select_supported = %w[openai gemini claude].include?(ai_settings_object.provider_preset) %>
+  <%= text_field_tag "settings[#{RedminePluginCheck::AiSettings.model_setting_key(ai_settings_object.provider_preset)}]",
+                     current_model_value,
+                     :size => 40,
+                     :id => 'settings_ai_model',
+                     :style => (model_select_supported ? 'display:none' : nil),
+                     :disabled => model_select_supported %>
   <%= button_tag l(:button_ai_fetch_models), :type => 'button', :id => 'settings_ai_fetch_models', :class => 'icon icon-reload' %>
-  <%= select_tag "settings[#{RedminePluginCheck::AiSettings.model_setting_key(ai_settings_object.provider_preset)}]", options_for_select([[current_model_value, current_model_value]], current_model_value), :id => 'settings_ai_model_select', :style => 'display:none' %>
+  <%= select_tag "settings[#{RedminePluginCheck::AiSettings.model_setting_key(ai_settings_object.provider_preset)}]",
+                 options_for_select([[current_model_value, current_model_value]], current_model_value),
+                 :id => 'settings_ai_model_select',
+                 :style => (model_select_supported ? nil : 'display:none'),
+                 :disabled => !model_select_supported %>
   <em class="info" id="settings_ai_model_status"></em>
   <em class="info" id="settings_ai_model_note"><%= l(:text_ai_fetch_models_saved_settings_required) %></em>
 </p>

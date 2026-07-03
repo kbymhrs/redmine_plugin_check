@@ -15,6 +15,13 @@ class RedminePluginCheckHelperTest < ActionView::TestCase
     assert_includes html, 'です。'
   end
 
+  test 'renders bold text that contains code spans' do
+    html = plugin_check_inline_markdown('**Plugin Compatibility Check (`redmine_plugin_check`)**')
+
+    assert_includes html, '<strong>Plugin Compatibility Check (<code>redmine_plugin_check</code>)</strong>'
+    assert_not_includes html, '**'
+  end
+
   test 'inline markdown escapes non markdown text' do
     html = plugin_check_inline_markdown('<script>alert(1)</script> `safe_code`')
 
@@ -22,3 +29,4 @@ class RedminePluginCheckHelperTest < ActionView::TestCase
     assert_includes html, '<code>safe_code</code>'
   end
 end
+

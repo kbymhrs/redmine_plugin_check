@@ -92,7 +92,6 @@
                  :style => (model_select_supported ? nil : 'display:none'),
                  :disabled => !model_select_supported %>
   <em class="info" id="settings_ai_model_status"></em>
-  <em class="info" id="settings_ai_model_note"><%= l(:text_ai_fetch_models_saved_settings_required) %></em>
 </p>
 
 <p>
@@ -125,7 +124,6 @@
   var fetchModelsAfterApplyLabel = '<%= j l(:button_ai_fetch_models_after_apply) %>';
   var modelSelect = document.getElementById('settings_ai_model_select');
   var modelStatus = document.getElementById('settings_ai_model_status');
-  var modelNote = document.getElementById('settings_ai_model_note');
   var apiKeyField = document.getElementById('settings_ai_api_key');
   var currentPreset = select ? select.value : null;
   var testConnection = document.getElementById('settings_ai_test_connection');
@@ -277,9 +275,10 @@ function updateFetchModelsDirtyState() {
   if (!fetchModels || !modelListSupported()) { return; }
 
   var dirty = appliedModelFetchSettingsSignature !== null && modelFetchSettingsSignature() !== appliedModelFetchSettingsSignature;
-  fetchModels.disabled = dirty;
+  var apiKeyMissing = !apiKeyField || apiKeyField.value.replace(/^\s+|\s+$/g, '') === '';
+  fetchModels.disabled = dirty || apiKeyMissing;
   fetchModels.innerHTML = dirty ? fetchModelsAfterApplyLabel : fetchModelsLabel;
-  if (dirty) {
+  if (fetchModels.disabled) {
     fetchModels.className = fetchModels.className.replace(/\s?icon-reload/g, '');
   } else if (fetchModels.className.indexOf('icon-reload') < 0) {
     fetchModels.className = fetchModels.className + ' icon-reload';
@@ -289,7 +288,6 @@ function updateFetchModelsDirtyState() {
 function updateModelControls() {
   var supportsModels = modelListSupported();
   if (fetchModels) { fetchModels.style.display = supportsModels ? '' : 'none'; }
-  if (modelNote) { modelNote.style.display = supportsModels ? '' : 'none'; }
   if (supportsModels) { useModelSelectInput(); } else { useModelTextInput(); }
   if (!supportsModels && modelStatus) { modelStatus.innerHTML = ''; }
   updateFetchModelsDirtyState();

@@ -49,7 +49,6 @@ en:
   text_ai_fetching_models: "Fetching models..."
   text_ai_select_model: "Select a model to update the setting."
   text_ai_models_fetch_failed: "Could not fetch models."
-  text_ai_fetch_models_saved_settings_required: "Fetching models uses the API key and settings currently entered on this page. You can fetch before saving. Available for OpenAI, Claude, and Gemini."
   text_ai_analysis_target_version_required: "<strong>Select or enter a target Redmine version</strong>, click <strong>Apply</strong>, then <strong>analyze with AI</strong>."
   text_ai_analysis_connecting: "Connecting to AI..."
   text_ai_analysis_saved_at: "Saved at: %{value}"

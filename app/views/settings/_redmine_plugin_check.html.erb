@@ -35,15 +35,6 @@
 <p>
   <label><%= l(:label_ai_provider_preset) %></label>
   <%= select_tag 'settings[ai_provider_preset]', options_for_select(RedminePluginCheck::AiSettings.provider_preset_options, ai_settings_object.provider_preset), :id => 'settings_ai_provider_preset' %>
-  <%= link_to l(:button_ai_test_connection),
-              plugin_check_ai_test_connection_path,
-              :class => 'icon icon-checked',
-              :id => 'settings_ai_test_connection' %>
-  <span class="plugin-check-ai-progress" id="settings_ai_test_connection_progress" style="display:none;">
-    <span class="plugin-check-ai-spinner"></span>
-    <span><%= l(:text_ai_test_connection_connecting) %></span>
-  </span>
-  <em class="info"><%= l(:text_ai_test_connection_saved_settings) %></em>
 </p>
 
 <p>
@@ -432,15 +423,30 @@ if (apiKeyField && apiKeyField.form) {
 //]]>
 </script>
 
-<p class="plugin-check-settings-footer-link" id="plugin-check-settings-footer-link">
-  <%= link_to l(:label_back_to_plugin_check), plugin_check_path, :class => 'plugin-check-settings-button' %>
-</p>
+<div class="plugin-check-settings-actions" id="plugin-check-settings-actions">
+  <p class="plugin-check-settings-test-connection" id="plugin-check-settings-test-connection">
+    <%= link_to l(:button_ai_test_connection),
+                plugin_check_ai_test_connection_path,
+                :class => 'icon icon-checked plugin-check-settings-button',
+                :id => 'settings_ai_test_connection' %>
+    <span class="plugin-check-ai-progress" id="settings_ai_test_connection_progress" style="display:none;">
+      <span class="plugin-check-ai-spinner"></span>
+      <span><%= l(:text_ai_test_connection_connecting) %></span>
+    </span>
+    <br />
+    <em class="info"><%= l(:text_ai_test_connection_saved_settings) %></em>
+  </p>
+
+  <p class="plugin-check-settings-footer-link" id="plugin-check-settings-footer-link">
+    <%= link_to l(:label_back_to_plugin_check), plugin_check_path, :class => 'plugin-check-settings-button' %>
+  </p>
+</div>
 
 <script type="text/javascript">
 //<![CDATA[
 (function() {
-  function movePluginCheckFooterLink() {
-    var footer = document.getElementById('plugin-check-settings-footer-link');
+  function movePluginCheckFooterActions() {
+    var footer = document.getElementById('plugin-check-settings-actions');
     if (!footer) { return; }
 
     var node = footer;
@@ -459,9 +465,9 @@ if (apiKeyField && apiKeyField.form) {
   }
 
   if (window.addEventListener) {
-    window.addEventListener('load', movePluginCheckFooterLink, false);
+    window.addEventListener('load', movePluginCheckFooterActions, false);
   } else if (window.attachEvent) {
-    window.attachEvent('onload', movePluginCheckFooterLink);
+    window.attachEvent('onload', movePluginCheckFooterActions);
   }
 }());
 //]]>

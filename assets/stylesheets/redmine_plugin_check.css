@@ -427,6 +427,19 @@
   text-decoration: none;
 }
 
+.plugin-check-settings-actions {
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.plugin-check-settings-test-connection {
+  margin: 0 0 8px;
+  padding: 0;
+}
+
+.plugin-check-settings-test-connection .plugin-check-settings-button {
+  margin-left: 0;
+}
 .plugin-check-settings-footer-link {
   margin: 0;
   padding: 0;

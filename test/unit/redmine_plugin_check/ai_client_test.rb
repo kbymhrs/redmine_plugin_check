@@ -21,6 +21,7 @@ class RedminePluginCheckAiClientTest < ActiveSupport::TestCase
     assert_equal 'Upgrade plan', result.content
     assert_equal 'gpt-test', payloads.first['model']
     assert_equal 'plugin report', payloads.first['messages'].last['content']
+    assert_equal 4096, payloads.first['max_tokens']
   end
 
   test 'returns api key missing before sending request' do
@@ -84,6 +85,7 @@ class RedminePluginCheckAiClientTest < ActiveSupport::TestCase
     assert result.success
     assert_equal 'Gemini plan', result.content
     assert_equal 'user', payloads.first['contents'].first['role']
+    assert_equal 4096, payloads.first['generationConfig']['maxOutputTokens']
   end
 
   test 'posts claude payload and returns content text' do
@@ -100,6 +102,7 @@ class RedminePluginCheckAiClientTest < ActiveSupport::TestCase
     assert_equal 'Claude plan', result.content
     assert_equal 'gpt-test', payloads.first['model']
     assert_equal 'System prompt', payloads.first['system']
+    assert_equal 4096, payloads.first['max_tokens']
   end
 
   test 'test connection ignores disabled setting' do

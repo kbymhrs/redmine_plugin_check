@@ -1,7 +1,7 @@
 module RedminePluginCheck
   class AiSettings
-    DEFAULT_SYSTEM_PROMPT_ENGLISH = 'You are an expert Redmine upgrade advisor. Analyze the plugin compatibility report and return concrete actions for the administrator.'.freeze
-    DEFAULT_SYSTEM_PROMPT_JAPANESE = 'あなたは Redmine アップグレード支援の専門家です。プラグイン互換性レポートを分析し、管理者が実行すべき具体的な対応を日本語で返してください。'.freeze
+    DEFAULT_SYSTEM_PROMPT_ENGLISH = 'You are an expert Redmine upgrade advisor. Analyze the plugin compatibility report, investigate existing releases, compatible tags, branches, active forks, issues, pull requests, dependencies, and verification stages before proposing code changes. Treat source code modification as the last resort and return concrete administrator actions.'.freeze
+    DEFAULT_SYSTEM_PROMPT_JAPANESE = 'あなたは Redmine アップグレード支援の専門家です。プラグイン互換性レポートを分析し、コード修正を最初に提案せず、既存の最新版、対応タグ、対応ブランチ、Active fork、Issue、Pull Request、依存関係、検証段階を先に確認したうえで、管理者が実行すべき具体的な対応を日本語で返してください。'.freeze
     LATEST_AI_ANALYSIS_CONTENT_KEY = 'latest_ai_analysis_content'.freeze
     LATEST_AI_ANALYSIS_GENERATED_AT_KEY = 'latest_ai_analysis_generated_at'.freeze
 
@@ -63,6 +63,7 @@ module RedminePluginCheck
       'ai_model_azure_openai' => PROVIDER_PRESETS['azure_openai']['model'],
       'ai_timeout_seconds' => '60',
       'ai_max_prompt_characters' => '30000',
+      'ai_max_output_tokens' => '4096',
       'ai_system_prompt' => ''
     }.freeze
 
@@ -160,6 +161,10 @@ module RedminePluginCheck
 
     def max_prompt_characters
       positive_integer(value('ai_max_prompt_characters'), DEFAULTS['ai_max_prompt_characters'].to_i)
+    end
+
+    def max_output_tokens
+      positive_integer(value('ai_max_output_tokens'), DEFAULTS['ai_max_output_tokens'].to_i)
     end
 
     def system_prompt

@@ -105,6 +105,11 @@
 </p>
 
 <p>
+  <label><%= l(:label_ai_max_output_tokens) %></label>
+  <%= text_field_tag 'settings[ai_max_output_tokens]', ai_settings['ai_max_output_tokens'], :size => 12 %>
+</p>
+
+<p>
   <label><%= l(:label_ai_system_prompt) %></label>
   <%= text_area_tag 'settings[ai_system_prompt]', ai_settings_object.system_prompt, :cols => 80, :rows => 6 %>
 </p>

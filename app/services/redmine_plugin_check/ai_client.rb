@@ -96,7 +96,8 @@ module RedminePluginCheck
         'messages' => [
           { 'role' => 'system', 'content' => settings.system_prompt },
           { 'role' => 'user', 'content' => prompt }
-        ]
+        ],
+        'max_tokens' => settings.max_output_tokens
       )
     end
 
@@ -109,14 +110,17 @@ module RedminePluginCheck
               { 'text' => settings.system_prompt + "\n\n" + prompt }
             ]
           }
-        ]
+        ],
+        'generationConfig' => {
+          'maxOutputTokens' => settings.max_output_tokens
+        }
       )
     end
 
     def claude_payload(prompt)
       JSON.generate(
         'model' => settings.model,
-        'max_tokens' => 1024,
+        'max_tokens' => settings.max_output_tokens,
         'system' => settings.system_prompt,
         'messages' => [
           { 'role' => 'user', 'content' => prompt }

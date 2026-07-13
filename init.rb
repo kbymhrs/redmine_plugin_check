@@ -63,7 +63,7 @@ Redmine::Plugin.register :redmine_plugin_check do
   url 'https://github.com/kbymhrs/redmine_plugin_check'
   author_url 'https://github.com/kbymhrs'
 
-  requires_redmine :version_or_higher => '3.3.0'
+  requires_redmine :version_or_higher => '3.0.0'
 
   settings :default => RedminePluginCheck::AiSettings::DEFAULTS,
            :partial => 'settings/redmine_plugin_check'

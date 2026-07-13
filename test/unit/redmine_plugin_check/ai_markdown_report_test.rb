@@ -76,6 +76,7 @@ class RedminePluginCheckAiMarkdownReportTest < ActiveSupport::TestCase
       assert_includes markdown, 'The latest version is not always the correct version'
       assert_includes markdown, 'Migration OK, Boot OK, Screen checked, Main features checked, Migration verified'
       assert_includes markdown, 'Plugin overview'
+      assert_includes markdown, 'Replaceable by core feature'
       assert_includes markdown, 'Current repository'
       assert_includes markdown, 'Active fork candidates'
       assert_includes markdown, 'https://github.com/<owner>/<repo>/forks'
@@ -86,6 +87,8 @@ class RedminePluginCheckAiMarkdownReportTest < ActiveSupport::TestCase
       assert_includes markdown, 'ActiveRecord::Migration[6.1]'
       assert_includes markdown, 'acts_as_list'
       assert_includes markdown, 'Save changes to the issue log'
+      assert_includes markdown, 'Redmine Mentions'
+      assert_includes markdown, '@mention notifications are built into core Redmine'
     end
   end
 
@@ -99,6 +102,7 @@ class RedminePluginCheckAiMarkdownReportTest < ActiveSupport::TestCase
       assert_includes markdown, '最新版が常に正解とは限りません'
       assert_includes markdown, 'migration成功、起動成功、画面確認済み、主要機能確認済み、移行確認完了'
       assert_includes markdown, 'プラグイン概要'
+      assert_includes markdown, '標準機能で代替可能か'
       assert_includes markdown, '現在使用中のリポジトリ'
       assert_includes markdown, 'Active fork候補'
       assert_includes markdown, 'https://github.com/<owner>/<repo>/forks'
@@ -107,6 +111,8 @@ class RedminePluginCheckAiMarkdownReportTest < ActiveSupport::TestCase
       assert_includes markdown, 'redmine_issue_templates'
       assert_includes markdown, 'release_0.4.3'
       assert_includes markdown, 'redmine_issue_checklist'
+      assert_includes markdown, 'Redmine Mentions'
+      assert_includes markdown, '@メンション通知が標準機能'
     end
   end
 

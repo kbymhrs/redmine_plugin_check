@@ -182,6 +182,7 @@ en:
         - Do not propose source code changes as the first answer just because a compatibility error was detected.
         - Always evaluate in this order: check the latest release, check target-Redmine tags and branches, check active forks on the GitHub /forks page, check existing issues, pull requests, README, release notes, and CI, check dependencies, and only then propose the smallest code change if no existing solution is available.
         - The latest version is not always the correct version. Distinguish versions that are too new for the target Rails/Redmine, such as plugins containing ActiveRecord::Migration[6.1].
+        - For each plugin, check whether its feature is now built into the target Redmine version or covered by an equivalent core feature. If the core feature can replace the plugin, recommend switching to the core feature, removing the plugin, and checking data or operational migration notes instead of updating or patching the plugin.
         - Do not guess unavailable information. Write "Unknown" or "Needs confirmation" instead.
         - Clearly distinguish plugin migration OK, app boot OK, screen checked, main features checked, and migration verified.
         - Never say a plugin is supported only because Redmine booted.
@@ -190,11 +191,12 @@ en:
         Required answer flow:
         1. Current state: current Redmine, target Redmine, Ruby, Rails, plugin name, current plugin version, detected issue, and current verification stage.
         2. Existing solution research: official latest release, latest tag, target-Redmine tags, branches such as redmine4/redmine5/rails5/support-rails5/stable, active forks checked on the GitHub forks page, such as https://github.com/<owner>/<repo>/forks, issues, pull requests, README, release notes, and CI.
-        3. Recommended version: recommended repository, tag or branch, selection reason, why a target-Redmine version may be better than the latest version, and cautions.
-        4. Dependency check: missing gems, gem conflicts, dependent plugins, Bundler differences, plugin Gemfile, migration version, plugin identifier, and assets.
-        5. Minimal patch: only after releases, compatible tags, branches, forks, and dependency additions do not solve the issue. Check call order and target Rails APIs before suggesting before_filter, alias_method_chain, attr_accessible, ActiveRecord::Migration, if_not_exists, or serialize changes.
-        6. Verification procedure: bundle install, DB migration, plugin migration, redmine:plugins:assets, boot, logs, screens, main feature operations, permissions, JavaScript, history, attachments, exports, and persisted settings.
-        7. Result stage: use stages such as Not investigated, Needs update, Needs fork research, Needs dependency, Needs code patch, Migration OK, Boot OK, Screen checked, Main features checked, Migration verified.
+        3. Core feature replacement check: check target Redmine official features, release notes, and admin settings for an equivalent built-in feature, and clearly state when the plugin can be replaced by core Redmine.
+        4. Recommended version: recommended repository, tag or branch, selection reason, why a target-Redmine version may be better than the latest version, and cautions.
+        5. Dependency check: missing gems, gem conflicts, dependent plugins, Bundler differences, plugin Gemfile, migration version, plugin identifier, and assets.
+        6. Minimal patch: only after releases, compatible tags, branches, forks, and dependency additions do not solve the issue. Check call order and target Rails APIs before suggesting before_filter, alias_method_chain, attr_accessible, ActiveRecord::Migration, if_not_exists, or serialize changes.
+        7. Verification procedure: bundle install, DB migration, plugin migration, redmine:plugins:assets, boot, logs, screens, main feature operations, permissions, JavaScript, history, attachments, exports, and persisted settings.
+        8. Result stage: use stages such as Not investigated, Needs update, Needs fork research, Needs dependency, Needs code patch, Migration OK, Boot OK, Screen checked, Main features checked, Migration verified.
 
         For each plugin, include these fields:
         - Plugin overview: At the top of each per-plugin analysis, write one line explaining what the plugin does. If the purpose is unknown, write "Unknown" or "Needs confirmation".
@@ -205,6 +207,7 @@ en:
         - Last updated
         - Target Redmine
         - Target Rails
+        - Replaceable by core feature: if the target Redmine includes an equivalent core feature, include the core feature name, evidence to verify, and removal/migration cautions
         - Active fork candidates, including the GitHub forks page URL and why each fork is a candidate
         - Dependency gems
         - Dependent plugins
@@ -236,3 +239,4 @@ en:
         - redmine_drafts: research active forks; even after using a fork, apply minimal Rails-specific fixes; adjust migration and serialize syntax for the target Rails.
         - redmine_issue_checklist: acts_as_list is missing; add the gem; fix alias_method_chain compatibility; then verify real checklist operations after boot.
         - Issue Checklist: even after boot success, Save changes to the issue log may be OFF, so settings must be checked.
+        - Redmine Mentions: for Redmine 6 and later, check whether @mention notifications are built into core Redmine. If the core feature can replace the plugin, recommend plugin removal and verification of notification settings and operational differences.

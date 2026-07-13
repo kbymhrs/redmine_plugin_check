@@ -182,6 +182,7 @@ ja:
         - 互換性エラーを見つけても、最初からコード修正を第一候補にしないでください。
         - 必ず「最新版を確認 → 対象Redmine向けタグ・ブランチを確認 → GitHub の /forks 画面で Activeなforkを確認 → 既存Issue・Pull Request・README・CIを確認 → 依存関係を確認 → 最後に最小限のコード修正」の順で検討してください。
         - 最新版が常に正解とは限りません。ActiveRecord::Migration[6.1] など、対象Rails/Redmineには新しすぎる版を区別してください。
+        - 各プラグインの機能が移行先 Redmine の標準機能または同等の標準機能になっていないか確認してください。標準機能で代替できる場合は、プラグイン更新や修正ではなく、標準機能への置き換え・プラグイン削除・データ/運用移行の注意点を推奨してください。
         - 情報を取得できない場合は推測せず、「不明」または「要確認」と書いてください。
         - migration成功、起動成功、画面確認済み、主要機能確認済み、移行確認完了を明確に区別してください。
         - 起動しただけで「対応済み」「動作確認済み」と断定しないでください。
@@ -190,11 +191,12 @@ ja:
         推奨回答フロー:
         1. 現状整理: 現在のRedmine、移行先Redmine、Ruby、Rails、プラグイン名、現在のバージョン、検出された問題、現在の到達段階。
         2. 既存解決策の調査: 公式最新版、最新タグ、対象Redmine向けタグ、redmine4/redmine5/rails5/support-rails5/stable 等のブランチ、GitHub forks 画面（例: https://github.com/<owner>/<repo>/forks）で確認した Active fork、Issue、Pull Request、README、リリースノート、CI。
-        3. 推奨版の提示: 推奨リポジトリ、推奨タグまたはブランチ、選定理由、最新版ではなく対象Redmine向け最新版を選ぶべき場合の理由、注意点。
-        4. 依存関係確認: 不足Gem、Gemバージョン競合、依存プラグイン、Bundler差、plugin Gemfile、migration version、plugin identifier、assets配置。
-        5. 最小修正: 既存版、対応タグ、対応ブランチ、fork、依存追加で解決できない場合のみ提示。before_filter、alias_method_chain、attr_accessible、ActiveRecord::Migration、if_not_exists、serialize記法などは呼び出し順と対象Rails APIを確認してから提案。
-        6. 検証手順: bundle install、DB migration、plugin migration、redmine:plugins:assets、起動、ログ、画面表示、主要機能操作、権限、JavaScript、履歴、添付、エクスポート、設定保持。
-        7. 判定: 未調査、要更新、要fork調査、要依存追加、要コード修正、migration成功、起動成功、画面確認済み、主要機能確認済み、移行確認完了の段階で表現。
+        3. 標準機能化の確認: 移行先 Redmine の公式機能、リリースノート、管理画面設定で同等機能が標準搭載されていないか確認し、標準機能で代替できる場合はその旨を明記。
+        4. 推奨版の提示: 推奨リポジトリ、推奨タグまたはブランチ、選定理由、最新版ではなく対象Redmine向け最新版を選ぶべき場合の理由、注意点。
+        5. 依存関係確認: 不足Gem、Gemバージョン競合、依存プラグイン、Bundler差、plugin Gemfile、migration version、plugin identifier、assets配置。
+        6. 最小修正: 既存版、対応タグ、対応ブランチ、fork、依存追加で解決できない場合のみ提示。before_filter、alias_method_chain、attr_accessible、ActiveRecord::Migration、if_not_exists、serialize記法などは呼び出し順と対象Rails APIを確認してから提案。
+        7. 検証手順: bundle install、DB migration、plugin migration、redmine:plugins:assets、起動、ログ、画面表示、主要機能操作、権限、JavaScript、履歴、添付、エクスポート、設定保持。
+        8. 判定: 未調査、要更新、要fork調査、要依存追加、要コード修正、migration成功、起動成功、画面確認済み、主要機能確認済み、移行確認完了の段階で表現。
 
         各プラグインごとに出力してほしい項目:
         - プラグイン概要: そのプラグインが何をするものかを各プラグイン詳細分析の最初に1行で書いてください。用途が不明な場合は「不明」または「要確認」としてください。
@@ -205,6 +207,7 @@ ja:
         - 最終更新日
         - 対象Redmine
         - 対象Rails
+        - 標準機能で代替可能か: 移行先 Redmine の標準機能になっている場合は、代替機能名、確認根拠、削除/移行時の注意点
         - Active fork候補（GitHub forks 画面 URL と候補理由）
         - 依存Gem
         - 依存プラグイン
@@ -236,3 +239,4 @@ ja:
         - redmine_drafts: Active fork調査、fork利用後もRails差分を最小修正、migrationとserialize記法を対象Rails向けに調整。
         - redmine_issue_checklist: acts_as_list 不足、Gem追加、alias_method_chain 互換修正、起動後にチェックリスト操作を確認。
         - Issue Checklist: 起動成功後も Save changes to the issue log がOFFなら設定確認が必要。
+        - Redmine Mentions: Redmine 6 以降では @メンション通知が標準機能になっている可能性を確認し、標準機能で代替できる場合はプラグイン削除と通知設定/運用差分の確認を提案。

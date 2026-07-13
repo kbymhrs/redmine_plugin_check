@@ -249,15 +249,19 @@ class RedminePluginCheckController < ApplicationController
   def save_latest_ai_analysis_result
     return unless @ai_analysis_result && @ai_analysis_result.success
 
-    generated_at = Time.now.utc
-    RedminePluginCheck::AiSettings.save_latest_ai_analysis(@ai_analysis_result.content, generated_at)
+    generated_at = Time.zone.now
+    RedminePluginCheck::AiSettings.save_latest_ai_analysis(@ai_analysis_result.content, generated_at, @ai_settings.provider_preset, @ai_settings.model)
     @latest_ai_analysis_content = @ai_analysis_result.content
     @latest_ai_analysis_generated_at = generated_at
+    @latest_ai_analysis_provider = @ai_settings.provider_preset
+    @latest_ai_analysis_model = @ai_settings.model
   end
 
   def load_latest_ai_analysis_result
     @latest_ai_analysis_content = @ai_settings.latest_ai_analysis_content
     @latest_ai_analysis_generated_at = parse_time(@ai_settings.latest_ai_analysis_generated_at)
+    @latest_ai_analysis_provider = @ai_settings.latest_ai_analysis_provider
+    @latest_ai_analysis_model = @ai_settings.latest_ai_analysis_model
   end
 
   def format_markdown(markdown)
@@ -337,9 +341,21 @@ class RedminePluginCheckController < ApplicationController
   end
 
   def ai_analysis_filename
-    timestamp = Time.zone.now.strftime('%Y%m%d%H%M%S')
-    "plugin_check_ai_analysis_#{timestamp}.md"
+    provider = filename_part(params[:provider].presence || @latest_ai_analysis_provider || @ai_settings.provider_preset)
+    model = filename_part(params[:model].presence || @latest_ai_analysis_model || @ai_settings.model)
+    timestamp = filename_timestamp(params[:generated_at].presence || @latest_ai_analysis_generated_at)
+    "plugin_check_#{provider}-#{model}_#{timestamp}.md"
+  end
+
+  def filename_timestamp(value)
+    time = parse_time(value) || Time.zone.now
+    time.strftime('%Y%m%d%H%M')
+  end
+
+  def filename_part(value)
+    text = value.to_s.downcase.strip
+    text = 'unknown' if text.empty?
+    text.gsub(/[^a-z0-9._-]+/, '-').gsub(/\A-+|-+\z/, '')
   end
 end
-
 

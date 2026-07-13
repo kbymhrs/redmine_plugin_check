@@ -4,6 +4,8 @@ module RedminePluginCheck
     DEFAULT_SYSTEM_PROMPT_JAPANESE = 'あなたは Redmine アップグレード支援の専門家です。プラグイン互換性レポートを分析し、コード修正を最初に提案せず、既存の最新版、対応タグ、対応ブランチ、Active fork、Issue、Pull Request、依存関係、検証段階を先に確認したうえで、管理者が実行すべき具体的な対応を日本語で返してください。'.freeze
     LATEST_AI_ANALYSIS_CONTENT_KEY = 'latest_ai_analysis_content'.freeze
     LATEST_AI_ANALYSIS_GENERATED_AT_KEY = 'latest_ai_analysis_generated_at'.freeze
+    LATEST_AI_ANALYSIS_PROVIDER_KEY = 'latest_ai_analysis_provider'.freeze
+    LATEST_AI_ANALYSIS_MODEL_KEY = 'latest_ai_analysis_model'.freeze
 
     PROVIDER_PRESETS = {
       'custom' => {
@@ -87,7 +89,7 @@ module RedminePluginCheck
       "ai_model_#{key}"
     end
 
-    def self.save_latest_ai_analysis(content, generated_at = Time.now)
+    def self.save_latest_ai_analysis(content, generated_at = Time.now, provider = nil, model = nil)
       return unless defined?(Setting) && Setting.respond_to?(:plugin_redmine_plugin_check=)
 
       settings = {}
@@ -95,6 +97,8 @@ module RedminePluginCheck
       current.each { |key, value| settings[key.to_s] = value } if current.respond_to?(:each)
       settings[LATEST_AI_ANALYSIS_CONTENT_KEY] = content.to_s
       settings[LATEST_AI_ANALYSIS_GENERATED_AT_KEY] = generated_at.strftime('%Y-%m-%d %H:%M:%S %z')
+      settings[LATEST_AI_ANALYSIS_PROVIDER_KEY] = provider.to_s if provider
+      settings[LATEST_AI_ANALYSIS_MODEL_KEY] = model.to_s if model
       Setting.plugin_redmine_plugin_check = settings
     end
 
@@ -182,6 +186,14 @@ module RedminePluginCheck
       value(LATEST_AI_ANALYSIS_GENERATED_AT_KEY)
     end
 
+    def latest_ai_analysis_provider
+      value(LATEST_AI_ANALYSIS_PROVIDER_KEY)
+    end
+
+    def latest_ai_analysis_model
+      value(LATEST_AI_ANALYSIS_MODEL_KEY)
+    end
+
     private
 
     attr_reader :settings, :saved_settings, :env, :locale
@@ -245,3 +257,4 @@ module RedminePluginCheck
     end
   end
 end
+

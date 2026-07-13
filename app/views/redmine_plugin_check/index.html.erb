@@ -212,6 +212,9 @@
         <% end %>
         <%= form_tag plugin_check_ai_analysis_download_path, :method => :post, :class => 'plugin-check-ai-download-form' do %>
           <%= text_area_tag :content, ai_analysis_content, :class => 'plugin-check-ai-download-content' %>
+          <%= hidden_field_tag :provider, (@latest_ai_analysis_provider.presence || @ai_settings.provider_preset) %>
+          <%= hidden_field_tag :model, (@latest_ai_analysis_model.presence || @ai_settings.model) %>
+          <%= hidden_field_tag :generated_at, (ai_analysis_saved_at.present? ? ai_analysis_saved_at.strftime('%Y-%m-%d %H:%M:%S %z') : Time.zone.now.strftime('%Y-%m-%d %H:%M:%S %z')) %>
           <%= submit_tag l(:label_download_ai_analysis_result), :name => nil, :class => 'icon icon-save' %>
         <% end %>
         <% if @target_version.present? && plugin_check_ai_analysis_available?(@ai_settings) %>

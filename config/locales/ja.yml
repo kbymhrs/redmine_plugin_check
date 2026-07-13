@@ -42,6 +42,7 @@ ja:
   label_ai_timeout_seconds: "タイムアウト秒数"
   label_ai_max_prompt_characters: "最大送信文字数"
   label_ai_max_output_tokens: "最大出力トークン数"
+  text_ai_max_output_tokens_hint: "AI 分析レポートの最大文字数に影響します。短すぎると途中で切れることがあります。"
   label_ai_system_prompt: "システムプロンプト"
   button_ai_analyze: "AI で分析する"
   button_ai_reanalyze: "再度 AI 分析"

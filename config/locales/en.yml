@@ -42,6 +42,7 @@ en:
   label_ai_timeout_seconds: "Timeout seconds"
   label_ai_max_prompt_characters: "Max prompt characters"
   label_ai_max_output_tokens: "Max output tokens"
+  text_ai_max_output_tokens_hint: "Affects the maximum length of the AI analysis report. If too small, the report may be cut off."
   label_ai_system_prompt: "System prompt"
   button_ai_analyze: "Analyze with AI"
   button_ai_reanalyze: "Analyze again"

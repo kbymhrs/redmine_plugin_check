@@ -106,6 +106,21 @@ class RedminePluginCheckAiMarkdownReportTest < ActiveSupport::TestCase
     end
   end
 
+
+  test 'renders ai markdown timestamps without timezone offset' do
+    with_locale(:en) do
+      plugin = fake_plugin(:last_modified_at => Time.utc(2026, 7, 13, 14, 15, 33))
+      report = fake_report([plugin])
+
+      markdown = RedminePluginCheck::AiMarkdownReport.new(report, [plugin], :generated_at => Time.utc(2026, 7, 13, 14, 0, 0)).call
+
+      assert_includes markdown, '- Generated at: 2026-07-13 14:00:00'
+      assert_includes markdown, '- Last modified at: 2026-07-13 14:15:33'
+      assert !markdown.include?('+0000'), 'AI markdown should not include timezone offsets'
+      assert !markdown.include?('+0900'), 'AI markdown should not include timezone offsets'
+    end
+  end
+
   test 'redacts likely secrets before returning markdown' do
     with_locale(:en) do
       plugin = fake_plugin(

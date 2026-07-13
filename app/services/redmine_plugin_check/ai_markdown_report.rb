@@ -160,7 +160,7 @@ module RedminePluginCheck
     def formatted_time(value)
       return '-' if value.nil?
 
-      value.strftime('%Y-%m-%d %H:%M:%S %z')
+      value.strftime('%Y-%m-%d %H:%M:%S')
     end
 
     def text(value)

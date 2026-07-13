@@ -43,6 +43,7 @@ en:
   label_ai_max_prompt_characters: "Max prompt characters"
   label_ai_max_output_tokens: "Max output tokens"
   text_ai_max_output_tokens_hint: "Affects the maximum length of the AI analysis report. If too small, the report may be cut off."
+  text_ai_timeout_settings_hint: "Consider increasing Timeout seconds on the plugin settings screen."
   label_ai_system_prompt: "System prompt"
   button_ai_analyze: "Analyze with AI"
   button_ai_reanalyze: "Analyze again"
@@ -231,4 +232,3 @@ en:
         - redmine_drafts: research active forks; even after using a fork, apply minimal Rails-specific fixes; adjust migration and serialize syntax for the target Rails.
         - redmine_issue_checklist: acts_as_list is missing; add the gem; fix alias_method_chain compatibility; then verify real checklist operations after boot.
         - Issue Checklist: even after boot success, Save changes to the issue log may be OFF, so settings must be checked.
-

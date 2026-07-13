@@ -43,6 +43,7 @@ ja:
   label_ai_max_prompt_characters: "最大送信文字数"
   label_ai_max_output_tokens: "最大出力トークン数"
   text_ai_max_output_tokens_hint: "AI 分析レポートの最大文字数に影響します。短すぎると途中で切れることがあります。"
+  text_ai_timeout_settings_hint: "設定画面でタイムアウト秒数の変更をご検討ください。"
   label_ai_system_prompt: "システムプロンプト"
   button_ai_analyze: "AI で分析する"
   button_ai_reanalyze: "再度 AI 分析"
@@ -231,4 +232,3 @@ ja:
         - redmine_drafts: Active fork調査、fork利用後もRails差分を最小修正、migrationとserialize記法を対象Rails向けに調整。
         - redmine_issue_checklist: acts_as_list 不足、Gem追加、alias_method_chain 互換修正、起動後にチェックリスト操作を確認。
         - Issue Checklist: 起動成功後も Save changes to the issue log がOFFなら設定確認が必要。
-

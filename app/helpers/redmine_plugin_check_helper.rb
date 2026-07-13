@@ -141,9 +141,18 @@ module RedminePluginCheckHelper
   def plugin_check_ai_error_message(result)
     key = result && result.error ? result.error : :request_failed
     message = I18n.t("redmine_plugin_check.ai_errors.#{key}", :default => key.to_s)
-    return message unless result && result.status_code
+    message = "#{message} (HTTP #{result.status_code})" if result && result.status_code
+    return message unless key == :request_timeout
 
-    "#{message} (HTTP #{result.status_code})"
+    safe_join([
+      h(message),
+      tag(:br),
+      link_to(l(:label_plugin_check_settings),
+              plugin_settings_path(:id => 'redmine_plugin_check'),
+              :class => 'icon icon-settings plugin-check-settings-button'),
+      ' ',
+      h(l(:text_ai_timeout_settings_hint))
+    ])
   end
   def plugin_check_markdown_preview(markdown)
     lines = markdown.to_s.lines.map(&:chomp)
@@ -217,4 +226,3 @@ module RedminePluginCheckHelper
     end.join
   end
 end
-

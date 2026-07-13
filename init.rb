@@ -29,8 +29,21 @@ module RedminePluginCheck
   module MenuIcon
     module_function
 
+    def admin_menu_options
+      options = {
+        :caption => :label_redmine_plugin_check,
+        :html => { :class => admin_icon_class }
+      }
+      options[:icon] = admin_sprite_icon if admin_sprite_icon
+      options
+    end
+
+    def admin_sprite_icon
+      redmine_version_at_least?('6.0.0') ? 'plugins' : nil
+    end
+
     def admin_icon_class
-      redmine_version_at_least?('6.0.0') ? 'plugins' : 'icon icon-reload'
+      redmine_version_at_least?('6.0.0') ? nil : 'icon icon-reload'
     end
 
     def redmine_version_at_least?(version)
@@ -58,6 +71,7 @@ Redmine::Plugin.register :redmine_plugin_check do
   menu :admin_menu,
        :plugin_check,
        { :controller => 'redmine_plugin_check', :action => 'index' },
-       :caption => :label_redmine_plugin_check,
-       :html => { :class => RedminePluginCheck::MenuIcon.admin_icon_class }
+       RedminePluginCheck::MenuIcon.admin_menu_options
 end
+
+

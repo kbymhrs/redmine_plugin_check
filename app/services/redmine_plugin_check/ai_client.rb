@@ -31,7 +31,7 @@ module RedminePluginCheck
       response = post_json_with_retries(api_uri, request_payload(prompt))
       status_code = response.code.to_i
       unless status_code >= 200 && status_code < 300
-        return Result.new(false, nil, http_error_key(status_code), status_code, request_details(started_at, prompt))
+        return Result.new(false, nil, http_error_key(status_code), status_code, request_details(started_at, prompt, nil, response_error_message(response.body)))
       end
 
       content = extract_content(response.body)
@@ -104,7 +104,7 @@ module RedminePluginCheck
           { 'role' => 'system', 'content' => settings.system_prompt },
           { 'role' => 'user', 'content' => prompt }
         ],
-        'max_tokens' => settings.max_output_tokens
+        openai_max_tokens_parameter => settings.max_output_tokens
       )
     end
 
@@ -320,6 +320,28 @@ module RedminePluginCheck
     end
 
 
+    def openai_max_tokens_parameter
+      %w[openai azure_openai].include?(settings.provider_preset) ? 'max_completion_tokens' : 'max_tokens'
+    end
+
+    def response_error_message(body)
+      parsed = JSON.parse(body.to_s) rescue nil
+      if parsed.is_a?(Hash)
+        error = parsed['error']
+        message = error.is_a?(Hash) ? error['message'] : nil
+        return truncate_error_message(message) if present?(message)
+      end
+
+      truncate_error_message(body.to_s)
+    end
+
+    def truncate_error_message(message)
+      text = message.to_s.strip
+      return nil unless present?(text)
+
+      text.length > 300 ? text[0, 300] + '...' : text
+    end
+
     def retryable_http_status?(status_code)
       RETRYABLE_HTTP_STATUSES.include?(status_code.to_i)
     end
@@ -331,7 +353,7 @@ module RedminePluginCheck
       :http_error
     end
 
-    def request_details(started_at, prompt, timeout_type = nil)
+    def request_details(started_at, prompt, timeout_type = nil, response_error = nil)
       details = {
         :elapsed_seconds => elapsed_seconds(started_at),
         :prompt_characters => prompt.to_s.length,
@@ -339,6 +361,7 @@ module RedminePluginCheck
         :provider => settings.provider_label
       }
       details[:timeout_type] = timeout_type if timeout_type
+      details[:response_error] = response_error if present?(response_error)
       details
     end
 
@@ -358,4 +381,6 @@ module RedminePluginCheck
     end
   end
 end
+
+
 

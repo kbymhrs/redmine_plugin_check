@@ -48,6 +48,7 @@ en:
   text_ai_error_elapsed_seconds: "Elapsed: %{value} seconds"
   text_ai_error_prompt_characters: "Sent characters: %{value}"
   text_ai_error_model: "Model: %{value}"
+  text_ai_error_response: "API response: %{value}"
   label_ai_system_prompt: "System prompt"
   button_ai_analyze: "Analyze with AI"
   button_ai_reanalyze: "Analyze again"
@@ -240,3 +241,4 @@ en:
         - redmine_issue_checklist: acts_as_list is missing; add the gem; fix alias_method_chain compatibility; then verify real checklist operations after boot.
         - Issue Checklist: even after boot success, Save changes to the issue log may be OFF, so settings must be checked.
         - Redmine Mentions: for Redmine 6 and later, check whether @mention notifications are built into core Redmine. If the core feature can replace the plugin, recommend plugin removal and verification of notification settings and operational differences.
+

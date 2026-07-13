@@ -21,7 +21,7 @@ class RedminePluginCheckAiClientTest < ActiveSupport::TestCase
     assert_equal 'Upgrade plan', result.content
     assert_equal 'gpt-test', payloads.first['model']
     assert_equal 'plugin report', payloads.first['messages'].last['content']
-    assert_equal 12000, payloads.first['max_tokens']
+    assert_equal 12000, payloads.first['max_completion_tokens']
   end
 
   test 'returns api key missing before sending request' do
@@ -213,6 +213,20 @@ end
     assert_equal 0, responses.length
   end
 
+
+  test 'includes provider error message for http errors' do
+    client = RedminePluginCheck::AiClient.new(ai_settings)
+    client.define_singleton_method(:post_json) do |_uri, _body|
+      FakeResponse.new('400', JSON.generate('error' => { 'message' => 'Unsupported parameter: max_tokens' }))
+    end
+
+    result = client.call('plugin report')
+
+    assert !result.success
+    assert_equal :http_error, result.error
+    assert_equal 400, result.status_code
+    assert_equal 'Unsupported parameter: max_tokens', result.details[:response_error]
+  end
   test 'classifies repeated service unavailable after retries' do
     client = RedminePluginCheck::AiClient.new(ai_settings)
     client.define_singleton_method(:sleep) { |_seconds| nil }
@@ -244,3 +258,5 @@ end
     RedminePluginCheck::AiSettings.new(settings, {})
   end
 end
+
+

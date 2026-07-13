@@ -48,6 +48,7 @@ ja:
   text_ai_error_elapsed_seconds: "経過秒数: %{value} 秒"
   text_ai_error_prompt_characters: "送信文字数: %{value}"
   text_ai_error_model: "利用モデル: %{value}"
+  text_ai_error_response: "API 応答: %{value}"
   label_ai_system_prompt: "システムプロンプト"
   button_ai_analyze: "AI で分析する"
   button_ai_reanalyze: "再度 AI 分析"
@@ -240,3 +241,4 @@ ja:
         - redmine_issue_checklist: acts_as_list 不足、Gem追加、alias_method_chain 互換修正、起動後にチェックリスト操作を確認。
         - Issue Checklist: 起動成功後も Save changes to the issue log がOFFなら設定確認が必要。
         - Redmine Mentions: Redmine 6 以降では @メンション通知が標準機能になっている可能性を確認し、標準機能で代替できる場合はプラグイン削除と通知設定/運用差分の確認を提案。
+

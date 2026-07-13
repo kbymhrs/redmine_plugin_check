@@ -169,11 +169,13 @@ module RedminePluginCheckHelper
     elapsed_seconds = details[:elapsed_seconds] || details['elapsed_seconds']
     prompt_characters = details[:prompt_characters] || details['prompt_characters']
     model = details[:model] || details['model']
+    response_error = details[:response_error] || details['response_error']
 
     items << l(:text_ai_error_timeout_type, :value => timeout_type) if timeout_type.present?
     items << l(:text_ai_error_elapsed_seconds, :value => elapsed_seconds) if elapsed_seconds.present?
     items << l(:text_ai_error_prompt_characters, :value => prompt_characters) if prompt_characters.present?
     items << l(:text_ai_error_model, :value => model) if model.present?
+    items << l(:text_ai_error_response, :value => response_error) if response_error.present?
     items
   end
   def plugin_check_markdown_preview(markdown)
@@ -309,3 +311,5 @@ module RedminePluginCheckHelper
     end.join
   end
 end
+
+

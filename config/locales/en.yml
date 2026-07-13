@@ -191,6 +191,7 @@ en:
         7. Result stage: use stages such as Not investigated, Needs update, Needs fork research, Needs dependency, Needs code patch, Migration OK, Boot OK, Screen checked, Main features checked, Migration verified.
 
         For each plugin, include these fields:
+        - Plugin overview: At the top of each per-plugin analysis, write one line explaining what the plugin does. If the purpose is unknown, write "Unknown" or "Needs confirmation".
         - Current repository
         - Current commit or tag
         - Recommended repository

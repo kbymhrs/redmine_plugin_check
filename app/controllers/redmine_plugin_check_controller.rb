@@ -276,9 +276,29 @@ class RedminePluginCheckController < ApplicationController
   def ai_error_message(result)
     key = result && result.error ? result.error : :request_failed
     message = I18n.t("redmine_plugin_check.ai_errors.#{key}", :default => key.to_s)
-    return message unless result && result.status_code
+    message = "#{message} (HTTP #{result.status_code})" if result && result.status_code
+    details = ai_error_detail_labels(result)
+    message = [message, details.join(' / ')].reject(&:blank?).join(' ')
+    return message unless key == :request_timeout
 
-    "#{message} (HTTP #{result.status_code})"
+    "#{message} #{l(:text_ai_timeout_settings_hint)}"
+  end
+
+  def ai_error_detail_labels(result)
+    details = result && result.respond_to?(:details) ? result.details : nil
+    return [] unless details.respond_to?(:[])
+
+    items = []
+    timeout_type = details[:timeout_type] || details['timeout_type']
+    elapsed_seconds = details[:elapsed_seconds] || details['elapsed_seconds']
+    prompt_characters = details[:prompt_characters] || details['prompt_characters']
+    model = details[:model] || details['model']
+
+    items << l(:text_ai_error_timeout_type, :value => timeout_type) if timeout_type.present?
+    items << l(:text_ai_error_elapsed_seconds, :value => elapsed_seconds) if elapsed_seconds.present?
+    items << l(:text_ai_error_prompt_characters, :value => prompt_characters) if prompt_characters.present?
+    items << l(:text_ai_error_model, :value => model) if model.present?
+    items
   end
   def localized_notes(notes)
     notes.map do |note|
@@ -319,4 +339,3 @@ class RedminePluginCheckController < ApplicationController
     "plugin_check_ai_analysis_#{timestamp}.md"
   end
 end
-

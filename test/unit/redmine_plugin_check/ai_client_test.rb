@@ -21,7 +21,7 @@ class RedminePluginCheckAiClientTest < ActiveSupport::TestCase
     assert_equal 'Upgrade plan', result.content
     assert_equal 'gpt-test', payloads.first['model']
     assert_equal 'plugin report', payloads.first['messages'].last['content']
-    assert_equal 30000, payloads.first['max_tokens']
+    assert_equal 12000, payloads.first['max_tokens']
   end
 
   test 'returns api key missing before sending request' do
@@ -72,6 +72,22 @@ class RedminePluginCheckAiClientTest < ActiveSupport::TestCase
     assert !result.success
     assert_equal :response_format_error, result.error
   end
+  test 'includes request details for read timeout' do
+    client = RedminePluginCheck::AiClient.new(ai_settings)
+    client.define_singleton_method(:post_json) do |_uri, _body|
+      raise Net::ReadTimeout
+    end
+
+    result = client.call('plugin report')
+
+    assert !result.success
+    assert_equal :request_timeout, result.error
+    assert_equal :read_timeout, result.details[:timeout_type]
+    assert_equal 'gpt-test', result.details[:model]
+    assert_equal 'OpenAI', result.details[:provider]
+    assert_equal 13, result.details[:prompt_characters]
+    assert result.details[:elapsed_seconds] >= 0
+  end
   test 'posts gemini payload and returns candidate text' do
     payloads = []
     client = RedminePluginCheck::AiClient.new(ai_settings('ai_provider_preset' => 'gemini'))
@@ -85,7 +101,7 @@ class RedminePluginCheckAiClientTest < ActiveSupport::TestCase
     assert result.success
     assert_equal 'Gemini plan', result.content
     assert_equal 'user', payloads.first['contents'].first['role']
-    assert_equal 30000, payloads.first['generationConfig']['maxOutputTokens']
+    assert_equal 12000, payloads.first['generationConfig']['maxOutputTokens']
   end
 
   test 'posts claude payload and returns content text' do
@@ -102,7 +118,7 @@ class RedminePluginCheckAiClientTest < ActiveSupport::TestCase
     assert_equal 'Claude plan', result.content
     assert_equal 'gpt-test', payloads.first['model']
     assert_equal 'System prompt', payloads.first['system']
-    assert_equal 30000, payloads.first['max_tokens']
+    assert_equal 12000, payloads.first['max_tokens']
   end
 
   test 'test connection ignores disabled setting' do
@@ -221,11 +237,10 @@ end
       'ai_api_key_env' => '',
       'ai_model' => 'gpt-test',
       'ai_timeout_seconds' => '5',
-      'ai_max_prompt_characters' => '30000',
+      'ai_max_prompt_characters' => '15000',
       'ai_system_prompt' => 'System prompt'
     }
     overrides.each { |key, value| settings[key] = value }
     RedminePluginCheck::AiSettings.new(settings, {})
   end
 end
-

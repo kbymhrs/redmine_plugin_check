@@ -6,7 +6,7 @@ require 'uri'
 
 module RedminePluginCheck
   class AiClient
-    Result = Struct.new(:success, :content, :error, :status_code)
+    Result = Struct.new(:success, :content, :error, :status_code, :details)
 
     USER_AGENT = 'RedminePluginCheck/0.1.1'.freeze
     TEST_PROMPT = 'Reply with OK only.'.freeze
@@ -20,29 +20,38 @@ module RedminePluginCheck
     end
 
     def call(markdown, options = {})
+      started_at = monotonic_time
+      prompt = nil
       return Result.new(false, nil, :ai_disabled, nil) unless options[:ignore_enabled] || settings.enabled?
       return Result.new(false, nil, :endpoint_missing, nil) unless settings.endpoint_present?
       return Result.new(false, nil, :api_key_missing, nil) unless settings.api_key_present?
       return Result.new(false, nil, :model_missing, nil) unless present?(settings.model)
 
-      response = post_json_with_retries(api_uri, request_payload(markdown))
+      prompt = limited_prompt(markdown)
+      response = post_json_with_retries(api_uri, request_payload(prompt))
       status_code = response.code.to_i
-      return Result.new(false, nil, http_error_key(status_code), status_code) unless status_code >= 200 && status_code < 300
+      unless status_code >= 200 && status_code < 300
+        return Result.new(false, nil, http_error_key(status_code), status_code, request_details(started_at, prompt))
+      end
 
       content = extract_content(response.body)
-      return Result.new(true, content, nil, status_code) if present?(content)
+      return Result.new(true, content, nil, status_code, request_details(started_at, prompt)) if present?(content)
 
-      Result.new(false, nil, :response_format_error, status_code)
+      Result.new(false, nil, :response_format_error, status_code, request_details(started_at, prompt))
     rescue JSON::ParserError
-      Result.new(false, nil, :json_parse_error, nil)
+      Result.new(false, nil, :json_parse_error, nil, request_details(started_at, prompt))
+    rescue Net::OpenTimeout
+      Result.new(false, nil, :request_timeout, nil, request_details(started_at, prompt, :open_timeout))
+    rescue Net::ReadTimeout
+      Result.new(false, nil, :request_timeout, nil, request_details(started_at, prompt, :read_timeout))
     rescue Timeout::Error
-      Result.new(false, nil, :request_timeout, nil)
+      Result.new(false, nil, :request_timeout, nil, request_details(started_at, prompt, :timeout))
     rescue OpenSSL::SSL::SSLError
-      Result.new(false, nil, :ssl_error, nil)
+      Result.new(false, nil, :ssl_error, nil, request_details(started_at, prompt))
     rescue URI::InvalidURIError
-      Result.new(false, nil, :endpoint_invalid, nil)
+      Result.new(false, nil, :endpoint_invalid, nil, request_details(started_at, prompt))
     rescue StandardError
-      Result.new(false, nil, :request_failed, nil)
+      Result.new(false, nil, :request_failed, nil, request_details(started_at, prompt))
     end
 
     def test_connection
@@ -77,9 +86,7 @@ module RedminePluginCheck
 
     attr_reader :settings
 
-    def request_payload(markdown)
-      prompt = limited_prompt(markdown)
-
+    def request_payload(prompt)
       case settings.provider_preset
       when 'gemini'
         gemini_payload(prompt)
@@ -323,9 +330,31 @@ module RedminePluginCheck
 
       :http_error
     end
+
+    def request_details(started_at, prompt, timeout_type = nil)
+      details = {
+        :elapsed_seconds => elapsed_seconds(started_at),
+        :prompt_characters => prompt.to_s.length,
+        :model => settings.model,
+        :provider => settings.provider_label
+      }
+      details[:timeout_type] = timeout_type if timeout_type
+      details
+    end
+
+    def monotonic_time
+      Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    rescue StandardError
+      Time.now.to_f
+    end
+
+    def elapsed_seconds(started_at)
+      return nil unless started_at
+
+      (monotonic_time - started_at).round(1)
+    end
     def present?(value)
       !value.to_s.strip.empty?
     end
   end
 end
-

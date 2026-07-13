@@ -62,8 +62,8 @@ module RedminePluginCheck
       'ai_model_claude' => PROVIDER_PRESETS['claude']['model'],
       'ai_model_azure_openai' => PROVIDER_PRESETS['azure_openai']['model'],
       'ai_timeout_seconds' => '60',
-      'ai_max_prompt_characters' => '30000',
-      'ai_max_output_tokens' => '30000',
+      'ai_max_prompt_characters' => '15000',
+      'ai_max_output_tokens' => '12000',
       'ai_system_prompt' => ''
     }.freeze
 
@@ -245,4 +245,3 @@ module RedminePluginCheck
     end
   end
 end
-

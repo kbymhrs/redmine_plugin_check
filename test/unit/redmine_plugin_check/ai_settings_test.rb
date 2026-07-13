@@ -89,7 +89,7 @@ class RedminePluginCheckAiSettingsTest < ActiveSupport::TestCase
     )
 
     assert_equal 60, settings.timeout_seconds
-    assert_equal 30000, settings.max_prompt_characters
+    assert_equal 15000, settings.max_prompt_characters
   end
 
   test 'uses Japanese default system prompt for Japanese locale' do
@@ -136,4 +136,3 @@ class RedminePluginCheckAiSettingsTest < ActiveSupport::TestCase
     assert_equal 'custom', settings.provider_preset
   end
 end
-

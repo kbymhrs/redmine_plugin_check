@@ -25,6 +25,23 @@ end
 
 require_dependency File.join(plugin_path, 'app/services/redmine_plugin_check/ai_settings')
 
+module RedminePluginCheck
+  module MenuIcon
+    module_function
+
+    def admin_icon_class
+      redmine_version_at_least?('6.0.0') ? 'plugins' : 'icon icon-reload'
+    end
+
+    def redmine_version_at_least?(version)
+      current = defined?(Redmine::VERSION) ? Redmine::VERSION.to_s : '0'
+      current = current[/\d+(?:\.\d+)*/] || '0'
+      Gem::Version.new(current) >= Gem::Version.new(version)
+    rescue StandardError
+      false
+    end
+  end
+end
 Redmine::Plugin.register :redmine_plugin_check do
   name 'Plugin Compatibility Check'
   author 'kbymhrs'
@@ -42,5 +59,5 @@ Redmine::Plugin.register :redmine_plugin_check do
        :plugin_check,
        { :controller => 'redmine_plugin_check', :action => 'index' },
        :caption => :label_redmine_plugin_check,
-       :html => { :class => 'icon icon-reload' }
+       :html => { :class => RedminePluginCheck::MenuIcon.admin_icon_class }
 end

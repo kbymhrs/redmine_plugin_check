@@ -140,7 +140,7 @@ en:
       has_plugin_gemfile: "Plugin has its own Gemfile"
       target_version_missing: "Target version was not provided"
     ai:
-      default_system_prompt: "You are an expert Redmine upgrade advisor. Analyze the plugin compatibility report, investigate existing releases, compatible tags, branches, active forks, issues, pull requests, dependencies, and verification stages before proposing code changes. Treat source code modification as the last resort and return concrete administrator actions."
+      default_system_prompt: "You are an expert Redmine upgrade advisor. Analyze the plugin compatibility report, investigate existing releases, compatible tags, branches, active forks including GitHub /forks pages, issues, pull requests, dependencies, and verification stages before proposing code changes. Treat source code modification as the last resort and return concrete administrator actions."
       truncated_prompt: "[TRUNCATED: The AI prompt exceeded %{limit} characters and was cut before sending.]"
     ai_markdown:
       title: "Redmine Plugin Compatibility AI Report"
@@ -180,7 +180,7 @@ en:
 
         Important response policy:
         - Do not propose source code changes as the first answer just because a compatibility error was detected.
-        - Always evaluate in this order: check the latest release, check target-Redmine tags and branches, check active forks, check existing issues, pull requests, README, release notes, and CI, check dependencies, and only then propose the smallest code change if no existing solution is available.
+        - Always evaluate in this order: check the latest release, check target-Redmine tags and branches, check active forks on the GitHub /forks page, check existing issues, pull requests, README, release notes, and CI, check dependencies, and only then propose the smallest code change if no existing solution is available.
         - The latest version is not always the correct version. Distinguish versions that are too new for the target Rails/Redmine, such as plugins containing ActiveRecord::Migration[6.1].
         - Do not guess unavailable information. Write "Unknown" or "Needs confirmation" instead.
         - Clearly distinguish plugin migration OK, app boot OK, screen checked, main features checked, and migration verified.
@@ -189,7 +189,7 @@ en:
 
         Required answer flow:
         1. Current state: current Redmine, target Redmine, Ruby, Rails, plugin name, current plugin version, detected issue, and current verification stage.
-        2. Existing solution research: official latest release, latest tag, target-Redmine tags, branches such as redmine4/redmine5/rails5/support-rails5/stable, active forks, issues, pull requests, README, release notes, and CI.
+        2. Existing solution research: official latest release, latest tag, target-Redmine tags, branches such as redmine4/redmine5/rails5/support-rails5/stable, active forks checked on the GitHub forks page, such as https://github.com/<owner>/<repo>/forks, issues, pull requests, README, release notes, and CI.
         3. Recommended version: recommended repository, tag or branch, selection reason, why a target-Redmine version may be better than the latest version, and cautions.
         4. Dependency check: missing gems, gem conflicts, dependent plugins, Bundler differences, plugin Gemfile, migration version, plugin identifier, and assets.
         5. Minimal patch: only after releases, compatible tags, branches, forks, and dependency additions do not solve the issue. Check call order and target Rails APIs before suggesting before_filter, alias_method_chain, attr_accessible, ActiveRecord::Migration, if_not_exists, or serialize changes.
@@ -205,7 +205,7 @@ en:
         - Last updated
         - Target Redmine
         - Target Rails
-        - Active fork candidates
+        - Active fork candidates, including the GitHub forks page URL and why each fork is a candidate
         - Dependency gems
         - Dependent plugins
         - Known compatibility issues

@@ -71,13 +71,14 @@ class RedminePluginCheckAiMarkdownReportTest < ActiveSupport::TestCase
       plugin = fake_plugin(:status => 'Risky')
       markdown = RedminePluginCheck::AiMarkdownReport.new(fake_report([plugin]), [plugin], :generated_at => Time.utc(2026, 6, 29, 0, 0, 0)).call
 
-      assert_includes markdown, 'check the latest release, check target-Redmine tags and branches, check active forks'
+      assert_includes markdown, 'check the latest release, check target-Redmine tags and branches, check active forks on the GitHub /forks page'
       assert_includes markdown, 'only then propose the smallest code change'
       assert_includes markdown, 'The latest version is not always the correct version'
       assert_includes markdown, 'Migration OK, Boot OK, Screen checked, Main features checked, Migration verified'
       assert_includes markdown, 'Plugin overview'
       assert_includes markdown, 'Current repository'
       assert_includes markdown, 'Active fork candidates'
+      assert_includes markdown, 'https://github.com/<owner>/<repo>/forks'
       assert_includes markdown, 'Settings migration check'
       assert_includes markdown, 'redmine33.test'
       assert_includes markdown, 'view_customize'
@@ -94,12 +95,13 @@ class RedminePluginCheckAiMarkdownReportTest < ActiveSupport::TestCase
       markdown = RedminePluginCheck::AiMarkdownReport.new(fake_report([plugin]), [plugin], :generated_at => Time.utc(2026, 6, 29, 0, 0, 0)).call
 
       assert_includes markdown, '最初からコード修正を第一候補にしないでください'
-      assert_includes markdown, '最新版を確認 → 対象Redmine向けタグ・ブランチを確認 → Activeなforkを確認'
+      assert_includes markdown, '最新版を確認 → 対象Redmine向けタグ・ブランチを確認 → GitHub の /forks 画面で Activeなforkを確認'
       assert_includes markdown, '最新版が常に正解とは限りません'
       assert_includes markdown, 'migration成功、起動成功、画面確認済み、主要機能確認済み、移行確認完了'
       assert_includes markdown, 'プラグイン概要'
       assert_includes markdown, '現在使用中のリポジトリ'
       assert_includes markdown, 'Active fork候補'
+      assert_includes markdown, 'https://github.com/<owner>/<repo>/forks'
       assert_includes markdown, '設定移行確認'
       assert_includes markdown, 'redmine33.test'
       assert_includes markdown, 'redmine_issue_templates'

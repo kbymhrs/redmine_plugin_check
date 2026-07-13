@@ -28,5 +28,21 @@ class RedminePluginCheckHelperTest < ActionView::TestCase
     assert_includes html, '&lt;script&gt;alert(1)&lt;/script&gt;'
     assert_includes html, '<code>safe_code</code>'
   end
-end
+  test 'markdown preview renders pipe tables' do
+    markdown = <<-MARKDOWN
+| Plugin | Status | Next action |
+|---|---|---|
+| `redmine_mentions` | Warning | Use **core feature** |
+| redmine_drafts | Risky | Check forks |
+    MARKDOWN
 
+    html = plugin_check_markdown_preview(markdown)
+
+    assert_includes html, '<table class="plugin-check-markdown-table">'
+    assert_includes html, '<thead>'
+    assert_includes html, '<th>Plugin</th>'
+    assert_includes html, '<td><code>redmine_mentions</code></td>'
+    assert_includes html, '<strong>core feature</strong>'
+    assert_not_includes html, '|---|---|---|'
+  end
+end

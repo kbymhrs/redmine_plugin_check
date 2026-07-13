@@ -180,13 +180,31 @@ module RedminePluginCheckHelper
     lines = markdown.to_s.lines.map(&:chomp)
     html = []
     list_open = false
+    index = 0
 
-    lines.each do |line|
+    while index < lines.length
+      line = lines[index]
       if line.strip.empty?
         if list_open
           html << '</ul>'
           list_open = false
         end
+        index += 1
+        next
+      end
+
+      if plugin_check_markdown_table_header?(line, lines[index + 1])
+        if list_open
+          html << '</ul>'
+          list_open = false
+        end
+        table_lines = [line]
+        index += 2
+        while index < lines.length && plugin_check_markdown_table_row?(lines[index])
+          table_lines << lines[index]
+          index += 1
+        end
+        html << plugin_check_markdown_table(table_lines)
         next
       end
 
@@ -198,6 +216,7 @@ module RedminePluginCheckHelper
         end
         level = [heading[1].length + 1, 5].min
         html << content_tag("h#{level}", heading[2].strip)
+        index += 1
         next
       end
 
@@ -208,6 +227,7 @@ module RedminePluginCheckHelper
           list_open = true
         end
         html << content_tag(:li, plugin_check_inline_markdown(item[1].strip))
+        index += 1
         next
       end
 
@@ -216,10 +236,51 @@ module RedminePluginCheckHelper
         list_open = false
       end
       html << content_tag(:p, plugin_check_inline_markdown(line.strip))
+      index += 1
     end
 
     html << '</ul>' if list_open
     html.join.html_safe
+  end
+
+  def plugin_check_markdown_table_header?(header, separator)
+    plugin_check_markdown_table_row?(header) && separator.to_s.strip =~ /\A\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\z/
+  end
+
+  def plugin_check_markdown_table_row?(line)
+    value = line.to_s.strip
+    value.start_with?('|') && value.count('|') >= 2
+  end
+
+  def plugin_check_markdown_table(lines)
+    header = plugin_check_markdown_table_cells(lines.first)
+    body = lines[1..-1].to_a.map { |line| plugin_check_markdown_table_cells(line) }
+    column_count = header.length
+
+    content_tag(:table, :class => 'plugin-check-markdown-table') do
+      thead = content_tag(:thead) do
+        content_tag(:tr) do
+          header.map { |cell| content_tag(:th, plugin_check_inline_markdown(cell)) }.join.html_safe
+        end
+      end
+      tbody = content_tag(:tbody) do
+        body.map do |row|
+          cells = row[0, column_count]
+          cells += [''] while cells.length < column_count
+          content_tag(:tr) do
+            cells.map { |cell| content_tag(:td, plugin_check_inline_markdown(cell)) }.join.html_safe
+          end
+        end.join.html_safe
+      end
+      (thead + tbody).html_safe
+    end
+  end
+
+  def plugin_check_markdown_table_cells(line)
+    value = line.to_s.strip
+    value = value[1..-1] if value.start_with?('|')
+    value = value[0..-2] if value.end_with?('|')
+    value.split('|').map { |cell| cell.strip }
   end
 
   def plugin_check_inline_markdown(text)

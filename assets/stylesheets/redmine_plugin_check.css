@@ -323,6 +323,35 @@
   padding: 1px 4px;
 }
 
+.plugin-check-markdown-table {
+  width: 100%;
+  margin: 8px 0 14px;
+  border-collapse: collapse;
+  background: #fff;
+  table-layout: auto;
+}
+
+.plugin-check-markdown-table th,
+.plugin-check-markdown-table td {
+  padding: 7px 9px;
+  border: 1px solid #d8dee5;
+  text-align: left;
+  vertical-align: top;
+}
+
+.plugin-check-markdown-table thead th {
+  background: #e9eef3;
+  color: #1f2d3d;
+  font-weight: bold;
+}
+
+.plugin-check-markdown-table tbody tr:nth-child(even) td {
+  background: #f7f9fb;
+}
+
+.plugin-check-markdown-table tbody tr:hover td {
+  background: #fffbe6;
+}
 .plugin-check-ai-progress {
   align-items: center;
   margin-left: 10px;

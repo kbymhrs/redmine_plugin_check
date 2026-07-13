@@ -8,7 +8,7 @@ module RedminePluginCheck
   class LatestVersionChecker
     Result = Struct.new(:version, :source, :error)
 
-    USER_AGENT = 'RedminePluginCheck/0.1.1'.freeze
+    USER_AGENT = 'RedminePluginCheck/1.0.0'.freeze
     TIMEOUT_SECONDS = 3
 
     def self.github_repository_from_url(url)
@@ -239,3 +239,4 @@ module RedminePluginCheck
     end
   end
 end
+

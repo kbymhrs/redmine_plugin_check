@@ -8,7 +8,7 @@ module RedminePluginCheck
   class AiClient
     Result = Struct.new(:success, :content, :error, :status_code, :details)
 
-    USER_AGENT = 'RedminePluginCheck/0.1.1'.freeze
+    USER_AGENT = 'RedminePluginCheck/1.0.0'.freeze
     TEST_PROMPT = 'Reply with OK only.'.freeze
     GEMINI_MODELS_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models'.freeze
     CLAUDE_MODELS_ENDPOINT = 'https://api.anthropic.com/v1/models'.freeze
@@ -358,3 +358,4 @@ module RedminePluginCheck
     end
   end
 end
+

@@ -59,7 +59,7 @@ Redmine::Plugin.register :redmine_plugin_check do
   name 'Plugin Compatibility Check'
   author 'kbymhrs'
   description 'Diagnoses installed Redmine plugins before a Redmine version upgrade.'
-  version '0.1.1'
+  version '1.0.0'
   url 'https://github.com/kbymhrs/redmine_plugin_check'
   author_url 'https://github.com/kbymhrs'
 
@@ -73,5 +73,4 @@ Redmine::Plugin.register :redmine_plugin_check do
        { :controller => 'redmine_plugin_check', :action => 'index' },
        RedminePluginCheck::MenuIcon.admin_menu_options
 end
-
 

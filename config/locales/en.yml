@@ -196,7 +196,7 @@ en:
         5. Dependency check: missing gems, gem conflicts, dependent plugins, Bundler differences, plugin Gemfile, migration version, plugin identifier, and assets.
         6. Minimal patch: only after releases, compatible tags, branches, forks, and dependency additions do not solve the issue. Check call order and target Rails APIs before suggesting before_filter, alias_method_chain, attr_accessible, ActiveRecord::Migration, if_not_exists, or serialize changes.
         7. Verification procedure: bundle install, DB migration, plugin migration, redmine:plugins:assets, boot, logs, screens, main feature operations, permissions, JavaScript, history, attachments, exports, and persisted settings.
-        8. Result stage: use stages such as Not investigated, Needs update, Needs fork research, Needs dependency, Needs code patch, Migration OK, Boot OK, Screen checked, Main features checked, Migration verified.
+        8. Result stage: use stages such as Needs investigation, Needs update, Needs fork research, Needs dependency, Needs code patch, Migration OK, Boot OK, Screen checked, Main features checked, Migration verified. For items requiring research, always use "Needs investigation".
 
         For each plugin, include these fields:
         - Plugin overview: At the top of each per-plugin analysis, write one line explaining what the plugin does. If the purpose is unknown, write "Unknown" or "Needs confirmation".

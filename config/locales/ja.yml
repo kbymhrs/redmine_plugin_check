@@ -196,7 +196,7 @@ ja:
         5. 依存関係確認: 不足Gem、Gemバージョン競合、依存プラグイン、Bundler差、plugin Gemfile、migration version、plugin identifier、assets配置。
         6. 最小修正: 既存版、対応タグ、対応ブランチ、fork、依存追加で解決できない場合のみ提示。before_filter、alias_method_chain、attr_accessible、ActiveRecord::Migration、if_not_exists、serialize記法などは呼び出し順と対象Rails APIを確認してから提案。
         7. 検証手順: bundle install、DB migration、plugin migration、redmine:plugins:assets、起動、ログ、画面表示、主要機能操作、権限、JavaScript、履歴、添付、エクスポート、設定保持。
-        8. 判定: 未調査、要更新、要fork調査、要依存追加、要コード修正、migration成功、起動成功、画面確認済み、主要機能確認済み、移行確認完了の段階で表現。
+        8. 判定: 要調査、要更新、要fork調査、要依存追加、要コード修正、migration成功、起動成功、画面確認済み、主要機能確認済み、移行確認完了の段階で表現。調査が必要な状態は必ず「要調査」と表現してください。
 
         各プラグインごとに出力してほしい項目:
         - プラグイン概要: そのプラグインが何をするものかを各プラグイン詳細分析の最初に1行で書いてください。用途が不明な場合は「不明」または「要確認」としてください。

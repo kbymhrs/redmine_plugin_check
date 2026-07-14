@@ -211,7 +211,7 @@ module RedminePluginCheck
       return 'Risky' if requires_result == false
       return 'Risky' if breaking_legacy_findings?(compatibility_findings)
       return 'Warning' if compatibility_findings.any?
-      return 'Warning' if has_init_condition || has_migrations || has_gemfile
+      return 'Warning' if has_migrations || has_gemfile
       return 'OK' if requires_result == true
       return 'Unknown' if requires_redmine.blank? && !has_init_condition
       return 'OK' if target_version.blank? && requires_redmine.present?
@@ -339,3 +339,4 @@ module RedminePluginCheck
     end
   end
 end
+

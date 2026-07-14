@@ -110,6 +110,23 @@ class RedminePluginCheckAnalyzerTest < ActiveSupport::TestCase
     end
   end
 
+
+  test 'keeps plugin ok when init has only a Redmine version compatibility branch' do
+    Dir.mktmpdir do |dir|
+      plugin_dir = File.join(dir, 'version_branch_plugin')
+      Dir.mkdir(plugin_dir)
+      File.write(File.join(plugin_dir, 'init.rb'), "Redmine::Plugin.register :version_branch_plugin do\nend\nGem::Version.new(Redmine::VERSION.to_s) >= Gem::Version.new('6.0.0')\n")
+      plugin = FakePlugin.new(:version_branch_plugin, 'Version Branch Plugin', '1.0.0', 'ACME', plugin_dir, { :version_or_higher => '3.0.0' })
+
+      report = RedminePluginCheck::Analyzer.new(:target_version => '7.0.0', :plugins => [plugin]).call
+      plugin_report = report.plugins.first
+
+      assert_equal 'OK', plugin_report.status
+      assert plugin_report.redmine_condition_in_init
+      assert_empty plugin_report.primary_reasons
+      assert_includes plugin_report.notes, :init_contains_redmine_version_condition
+    end
+  end
   test 'adds missing requires_redmine to primary reasons for unknown plugins' do
     Dir.mktmpdir do |dir|
       plugin_dir = File.join(dir, 'unknown_plugin')
@@ -143,3 +160,4 @@ class RedminePluginCheckAnalyzerTest < ActiveSupport::TestCase
     end
   end
 end
+

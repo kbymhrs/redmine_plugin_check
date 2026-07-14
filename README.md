@@ -1,210 +1,96 @@
 # Plugin Compatibility Check
 
-Plugin Compatibility Check は、Redmine のバージョンアップ前にインストール済みプラグインの互換性と危険度を静的に診断する Redmine プラグインです。
+Plugin Compatibility Check helps you assess whether installed Redmine plugins
+are likely to work after upgrading Redmine.
 
-この MVP は読み取り専用です。Redmine のアップグレード、プラグインファイルの変更、migration 実行、gem install などの破壊的・変更系操作は行いません。
+It performs **read-only static analysis**.
+No plugin files, database, gems, or Redmine installation are modified.
 
-## 対象
+---
 
-- Redmine 3.0.0 以上
-- 実運用確認の主対象: Redmine 3.3.3
-- 対応想定範囲:
-  - Redmine 3.0.x / 3.1.x / 3.2.x / 3.3.x / 3.4.x
-  - Redmine 4.0.x / 4.1.x / 4.2.x
-  - Redmine 5.0.x / 5.1.x
-  - Redmine 6.0.x / 6.1.x
-- 対象 Redmine がサポートする Ruby / Rails
-- 管理者のみ閲覧可能
-- 外部 gem 追加なし
+## Features
 
-Redmine 3.0 系でも読み込めるよう、plugin 本体は古い Ruby で問題になりやすい `keyword_init`、`Regexp#match?`、`String#delete_prefix`、safe navigation などに依存しない実装にしています。
+- Detect installed plugins
+- Compare `requires_redmine` with a target Redmine version
+- Detect deprecated Redmine/Rails APIs
+- Estimate migration risk (OK / Warning / Unknown / Risky)
+- Export CSV
+- Export AI-friendly Markdown report
+- Optional AI analysis using an OpenAI-compatible API
 
-## 機能
+---
 
-- 現在の Redmine / Ruby / Rails バージョン表示
-- installed plugins 一覧表示
-- 各 plugin の基本情報解析
-  - plugin id
-  - name
-  - version
-  - author
-  - plugin directory 内の最終更新日
-  - `requires_redmine`
-  - `init.rb` 内の Redmine バージョン条件らしき記述
-  - `db/migrate` の有無
-  - `Gemfile` の有無
-- 任意で plugin の最新バージョン取得
-  - `plugin.url` または plugin directory の `.git/config` から GitHub repository を検出
-  - GitHub Releases の latest を取得
-  - Release がない場合は Tags を fallback として取得
-- target Redmine version と `requires_redmine` の簡易比較
-- `requires_redmine` が下限のみかどうかの判定
-- 現在の Redmine major version から target major version へのジャンプ判定
-- plugin source の簡易互換性 scan
-  - `alias_method_chain`
-  - `Dispatcher.to_prepare`
-  - `require_dependency 'dispatcher'`
-  - `before_filter` / `after_filter`
-  - `unloadable`
-  - `attr_accessible`
-  - `ActiveRecord::Observer`
-  - `send(:include)` による monkey patch
-- `OK` / `Warning` / `Unknown` / `Risky` の診断表示
-- Risky / Warning / Unknown / OK の優先順表示
-- ステータス絞り込み
-  - すべて
-  - 要確認のみ
-  - Risky / Warning / Unknown / OK
-- ステータスの主な理由列
-- 詳細列の表示切り替え
-- CSV export
-  - 画面の絞り込みを反映
-  - 棚卸し用の `review_result` / `action_plan` 空列を追加
-- AI 用 Markdown export
-  - 画面の絞り込みを反映
-  - AI にそのまま渡しやすい概要、優先確認リスト、plugin 別詳細、依頼文を出力
-- AI API 設定
-  - Redmine plugin settings で有効化、endpoint、model、timeout、最大送信文字数、system prompt を設定
-  - API key は環境変数を優先し、画面保存は補助として利用
-- AI 分析実行
-  - AI 用 Markdown を OpenAI compatible chat completions API に送信
-  - AI の回答を診断画面に表示
+## Supported Versions
 
-## インストール
+Plugin Compatibility Check supports:
 
-Redmine の `plugins` 配下にこのディレクトリを配置します。
+- Redmine 3.x
+- Redmine 4.x
+- Redmine 5.x
+- Redmine 6.x
+- Redmine 7.x
+
+The plugin itself is implemented to remain compatible with older Ruby versions used by these Redmine releases.
+
+---
+
+## Installation
+
+Copy the plugin into the `plugins` directory.
 
 ```bash
-cd /path/to/redmine
-cp -r /path/to/redmine_plugin_check plugins/redmine_plugin_check
+cp -r redmine_plugin_check plugins/
 ```
 
-Redmine を再起動します。
+Restart Redmine.
 
-Passenger、Puma、Unicorn、thin など、利用中のアプリケーションサーバーを再起動してください。
+No database migration is required.
 
-この MVP では database migration は不要です。
+---
 
-## 使い方
+## Usage
 
-1. Redmine に管理者としてログインします。
-2. **管理** 画面を開きます。
-3. 管理メニューの **Plugin Check** を開きます。
-4. `3.4.13`、`4.2.11`、`5.1.12`、`6.1.2` などの移行先 Redmine バージョンを入力します。
-5. 診断テーブルを確認します。
-6. 必要に応じて **表示** で `要確認のみ`、`Risky`、`Warning` などに絞り込みます。
-7. 必要に応じて **最新バージョン情報も取得する** にチェックを入れて再表示します。
-8. 詳しい根拠列を確認したい場合は **詳細列も表示する** にチェックを入れます。
-9. 必要に応じて **CSV 出力** をクリックします。
-10. AI に診断結果を渡したい場合は **AI 用 Markdown 出力** をクリックします。
-11. そのまま API に送信したい場合は、プラグイン設定で AI 分析を有効にし、API 設定を行ってから **AI で分析する** をクリックします。
+1. Open **Administration → Plugin Check**
+2. Enter the target Redmine version.
+3. Review the compatibility report.
+4. Export CSV or AI Markdown if required.
+5. Optionally perform AI analysis.
 
-最新バージョン取得は best effort です。すべての Redmine plugin が公式な配布元や release 情報を持つわけではないため、GitHub repository を検出できる plugin のみ対象になります。ネットワーク接続、private repository、認証が必要な repository、GitHub API rate limit、古い Ruby 環境の TLS 設定などによって `取得不可` / `取得失敗` / `認証が必要` / `rate limit` / `SSL エラー` などになる場合があります。`rate limit` は GitHub API の未認証アクセス制限に達した状態で、時間を置くと解消する場合があります。
+---
 
-## AI API 設定
+## Recommended Upgrade Workflow
 
-AI 分析は任意機能です。Markdown 出力だけを使う場合、API 設定は不要です。
+We recommend the following workflow when upgrading Redmine:
 
-管理画面の plugin settings で以下を設定します。
+1. Scan installed plugins.
+2. Search for actively maintained forks.
+3. Upgrade plugins before modifying code.
+4. Run plugin migrations.
+5. Start Redmine.
+6. Verify actual plugin functionality.
 
-- AI 分析を有効にする
-- API endpoint
-- API key environment variable
-- API key
-- model
-- timeout seconds
-- max prompt characters
-- system prompt
+Successful startup alone does **not** guarantee plugin compatibility.
 
-API key は環境変数を推奨します。初期設定では `REDMINE_PLUGIN_CHECK_AI_API_KEY` を参照します。
-環境変数に値がある場合は、plugin settings に保存した API key より優先されます。
+---
 
-OpenAI compatible な chat completions API を想定しています。初期 endpoint は `https://api.openai.com/v1/chat/completions`、初期 model は `gpt-4.1-mini` です。
+## Contributing
 
-AI 分析は診断結果を送信して回答を表示するだけで、Redmine や plugin file は変更しません。
+Bug reports and pull requests are welcome.
 
-## 診断ルール
+---
 
-MVP のため、判定は意図的に単純で保守的です。
+## Documentation
 
-- `OK`: target version が `requires_redmine` を満たし、migration / Gemfile / 独自バージョン条件 / 旧 API pattern が見つからない。
-- `Warning`: `db/migrate`、独自 `Gemfile`、`init.rb` 内の Redmine バージョン条件らしき記述、または旧 API pattern がある。
-- `Unknown`: `requires_redmine` がなく、バージョン条件らしき記述も見つからない。
-- `Risky`: target version が `requires_redmine` を満たさない、または target が Redmine 4+ で `alias_method_chain` など壊れる可能性が高い旧 pattern がある。
+- [Installation](docs/installation.md)
+- [Usage](docs/usage.md)
+- [AI Analysis](docs/ai-analysis.md)
+- [Detection Rules](docs/detection-rules.md)
+- [Migration Workflow](docs/migration-workflow.md)
+- [Compatibility Notes](docs/compatibility.md)
+- [Roadmap](docs/roadmap.md)
 
-一覧では `ステータスの主な理由` に優先して確認したい理由を短く表示します。`OK` の場合は表示ノイズを減らすため原則 `-` になり、補足情報は `メモ` に残ります。
+---
 
-`互換性 scan` は検出した file path と行番号を表示します。コメント行や説明用の `:alias_method_chain_breaking` のような文字列は、できるだけ誤検出しないように除外しています。
+## License
 
-`OK` は静的解析上の簡易判定です。実際の互換性を保証するものではありません。
-特に `requires_redmine :version_or_higher => '3.0.0'` のような下限のみの指定は、最新 Redmine での互換性を保証しません。
-ただし、Redmine 3.3 から 6.x への診断では多くの plugin が下限のみになりやすいため、下限のみ + major version jump だけでは `Warning` にせず、別列とメモで表示します。`Warning` / `Risky` は、より具体的なリスク材料がある plugin を目立たせるために使います。
-
-## 主要ファイル
-
-- `init.rb`: plugin 登録と管理メニュー追加。
-- `config/routes.rb`: `plugin_check` route 定義。
-- `app/controllers/redmine_plugin_check_controller.rb`: 管理者画面、絞り込み、優先ソート、CSV / AI 用 Markdown export。
-- `app/services/redmine_plugin_check/analyzer.rb`: installed plugins の解析と診断結果生成。
-- `app/services/redmine_plugin_check/compatibility_scanner.rb`: plugin source 内の古い Rails/Redmine pattern を検出。
-- `app/services/redmine_plugin_check/latest_version_checker.rb`: GitHub Releases/Tags から最新バージョンを best effort で取得。
-- `app/services/redmine_plugin_check/ai_markdown_report.rb`: 診断結果を AI 分析向け Markdown に整形。
-- `app/services/redmine_plugin_check/ai_settings.rb`: AI API 設定と環境変数 API key の読み出し。
-- `app/services/redmine_plugin_check/ai_client.rb`: OpenAI compatible chat completions API への送信。
-- `app/services/redmine_plugin_check/version_requirement.rb`: `requires_redmine` と target version の簡易比較。
-- `app/views/redmine_plugin_check/index.html.erb`: summary、target version form、診断テーブル、CSV / AI 用 Markdown link、AI 分析パネル。
-- `assets/stylesheets/redmine_plugin_check.css`: Redmine 管理画面向けの軽いスタイル。
-- `config/locales/en.yml` / `config/locales/ja.yml`: 英語・日本語ラベル。
-- `test/unit/redmine_plugin_check/*_test.rb`: service class のテスト。
-
-## 手元で動かす手順
-
-Redmine checkout にこの plugin を配置した状態で確認します。
-
-Redmine 3.3.x / 3.4.x / 4.x:
-
-```bash
-bundle exec rake redmine:plugins
-bundle exec rake test TEST=plugins/redmine_plugin_check/test/unit/redmine_plugin_check/version_requirement_test.rb
-bundle exec rake test TEST=plugins/redmine_plugin_check/test/unit/redmine_plugin_check/analyzer_test.rb
-bundle exec rake test TEST=plugins/redmine_plugin_check/test/unit/redmine_plugin_check/latest_version_checker_test.rb
-```
-
-Redmine 5.x / 6.x:
-
-```bash
-bundle exec rails redmine:plugins
-bundle exec rails test plugins/redmine_plugin_check/test/unit/redmine_plugin_check/version_requirement_test.rb
-bundle exec rails test plugins/redmine_plugin_check/test/unit/redmine_plugin_check/analyzer_test.rb
-bundle exec rails test plugins/redmine_plugin_check/test/unit/redmine_plugin_check/latest_version_checker_test.rb
-```
-
-画面確認:
-
-```bash
-bundle exec rails server
-```
-
-ブラウザで Redmine に管理者ログインし、**管理 > Plugin Check** を開きます。
-
-## 互換性確認の推奨マトリクス
-
-全 patch version を毎回起動確認するのは重いため、まずは各系列の代表として以下を確認するのがおすすめです。
-
-- Redmine 3.3.3
-- Redmine 3.4 latest
-- Redmine 4.2 latest
-- Redmine 5.1 latest
-- Redmine 6.1 latest
-
-Redmine 3.3.x 全 patch を厳密に保証したい場合は、3.3.0 と 3.3.9 など、系列の最初と最後に近い patch でも同じ確認を行ってください。
-
-## 今後の拡張案
-
-- plugin の repository URL 検出対象を GitLab、Bitbucket、Redmine.org plugin directory まで広げる。
-- Redmine major version ごとの既知の破壊的変更をルール化する。
-- plugin source を scan して削除済み Redmine API 利用を検出する。
-- CI や事前点検向けに JSON export を追加する。
-- 組織内の allowlist / 手動確認メモ / 判定 override を保存できるようにする。
-- 診断履歴を保存し、前回との差分を表示する。
-
+GPL v2

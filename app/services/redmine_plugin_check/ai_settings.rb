@@ -233,11 +233,19 @@ module RedminePluginCheck
     end
 
     def default_system_prompt?(prompt)
-      !present?(prompt) ||
-        prompt == DEFAULT_SYSTEM_PROMPT_ENGLISH ||
-        prompt == DEFAULT_SYSTEM_PROMPT_JAPANESE
+      return true unless present?(prompt)
+
+      default_system_prompt_values.include?(prompt.to_s.strip)
     end
 
+    def default_system_prompt_values
+      values = [DEFAULT_SYSTEM_PROMPT_ENGLISH, DEFAULT_SYSTEM_PROMPT_JAPANESE]
+      if defined?(I18n)
+        values << I18n.t('redmine_plugin_check.ai.default_system_prompt', :locale => :en, :default => DEFAULT_SYSTEM_PROMPT_ENGLISH)
+        values << I18n.t('redmine_plugin_check.ai.default_system_prompt', :locale => :ja, :default => DEFAULT_SYSTEM_PROMPT_JAPANESE)
+      end
+      values.compact.map(&:to_s).map(&:strip).uniq
+    end
     def localized_default_system_prompt
       default = japanese_locale? ? DEFAULT_SYSTEM_PROMPT_JAPANESE : DEFAULT_SYSTEM_PROMPT_ENGLISH
       return default unless defined?(I18n)

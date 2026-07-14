@@ -83,6 +83,14 @@ Successful startup alone does **not** guarantee plugin compatibility.
 
 ---
 
+## Article
+
+The background and lessons learned while upgrading Redmine from 3.3 to 7.0 are described here.
+
+Japanese : https://zenn.dev/kbymhrs/articles/redmine-plugin-compatibility-check
+
+---
+
 ## Contributing
 
 Bug reports and pull requests are welcome.

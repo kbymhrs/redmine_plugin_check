@@ -10,7 +10,7 @@ No plugin files, database, gems, or Redmine installation are modified.
 
 ## Overview
 
-![Overview](assets/images/overview.png)
+![Overview](assets/imgs/overview.png)
 
 ---
 

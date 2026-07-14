@@ -93,4 +93,5 @@ Bug reports and pull requests are welcome.
 
 ## License
 
-GPL v2
+This project is licensed under the GNU General Public License v2.0.
+See the LICENSE file for details.

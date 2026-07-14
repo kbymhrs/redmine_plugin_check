@@ -12,6 +12,10 @@ No plugin files, database, gems, or Redmine installation are modified.
 
 ![Overview](assets/imgs/overview.png)
 
+## AI Analysis
+
+![AI](assets/imgs/ai-analysis.png)
+
 ---
 
 ## Features
